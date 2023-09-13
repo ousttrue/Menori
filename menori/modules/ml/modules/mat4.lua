@@ -16,8 +16,6 @@
 Matrix4.
 menori.ml.mat4
 ]]
--- @classmod mat4
--- @alias mat4_mt
 
 local modules = (...):gsub('%.[^%.]+$', '') .. "."
 local vec3 = require(modules .. "vec3")
@@ -29,16 +27,21 @@ if type(jit) == 'table' or jit.status() then
 	bytesize = ffi.sizeof('float[16]')
 end
 
-local mat4 = {}
+---@class mat4
 local mat4_mt = {}
+---@class mat4
+---@field data number[]
+---@field e number[]
+---@field changed boolean
+local mat4 = {}
 mat4_mt.__index = mat4_mt
 
-local temp_a4 = {0, 0, 0, 0}
+local temp_a4 = { 0, 0, 0, 0 }
 
 local function identity(e)
-	e[ 1], e[ 2], e[ 3], e[ 4] = 1, 0, 0, 0
-	e[ 5], e[ 6], e[ 7], e[ 8] = 0, 1, 0, 0
-	e[ 9], e[10], e[11], e[12] = 0, 0, 1, 0
+	e[1], e[2], e[3], e[4] = 1, 0, 0, 0
+	e[5], e[6], e[7], e[8] = 0, 1, 0, 0
+	e[9], e[10], e[11], e[12] = 0, 0, 1, 0
 	e[13], e[14], e[15], e[16] = 0, 0, 0, 1
 end
 
@@ -68,7 +71,7 @@ local function new(m)
 		data = love.data.newByteData(bytesize)
 		e = ffi.cast('float*', data:getFFIPointer()) - 1
 	else
-		data = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+		data = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 		e = data
 	end
 	local t = setmetatable({ data = data, e = e, changed = true }, mat4_mt)
@@ -91,20 +94,20 @@ local temp_m4 = new()
 local temp_array = new()
 
 local function multiply(a, b, result)
-	result = result or a
-	temp_m4[1]  = a[1] * b[1]  + a[5] * b[2]  + a[9]  * b[3]  + a[13] * b[4]
-	temp_m4[2]  = a[2] * b[1]  + a[6] * b[2]  + a[10] * b[3]  + a[14] * b[4]
-	temp_m4[3]  = a[3] * b[1]  + a[7] * b[2]  + a[11] * b[3]  + a[15] * b[4]
-	temp_m4[4]  = a[4] * b[1]  + a[8] * b[2]  + a[12] * b[3]  + a[16] * b[4]
-	temp_m4[5]  = a[1] * b[5]  + a[5] * b[6]  + a[9]  * b[7]  + a[13] * b[8]
-	temp_m4[6]  = a[2] * b[5]  + a[6] * b[6]  + a[10] * b[7]  + a[14] * b[8]
-	temp_m4[7]  = a[3] * b[5]  + a[7] * b[6]  + a[11] * b[7]  + a[15] * b[8]
-	temp_m4[8]  = a[4] * b[5]  + a[8] * b[6]  + a[12] * b[7]  + a[16] * b[8]
-	temp_m4[9]  = a[1] * b[9]  + a[5] * b[10] + a[9]  * b[11] + a[13] * b[12]
-	temp_m4[10] = a[2] * b[9]  + a[6] * b[10] + a[10] * b[11] + a[14] * b[12]
-	temp_m4[11] = a[3] * b[9]  + a[7] * b[10] + a[11] * b[11] + a[15] * b[12]
-	temp_m4[12] = a[4] * b[9]  + a[8] * b[10] + a[12] * b[11] + a[16] * b[12]
-	temp_m4[13] = a[1] * b[13] + a[5] * b[14] + a[9]  * b[15] + a[13] * b[16]
+	result      = result or a
+	temp_m4[1]  = a[1] * b[1] + a[5] * b[2] + a[9] * b[3] + a[13] * b[4]
+	temp_m4[2]  = a[2] * b[1] + a[6] * b[2] + a[10] * b[3] + a[14] * b[4]
+	temp_m4[3]  = a[3] * b[1] + a[7] * b[2] + a[11] * b[3] + a[15] * b[4]
+	temp_m4[4]  = a[4] * b[1] + a[8] * b[2] + a[12] * b[3] + a[16] * b[4]
+	temp_m4[5]  = a[1] * b[5] + a[5] * b[6] + a[9] * b[7] + a[13] * b[8]
+	temp_m4[6]  = a[2] * b[5] + a[6] * b[6] + a[10] * b[7] + a[14] * b[8]
+	temp_m4[7]  = a[3] * b[5] + a[7] * b[6] + a[11] * b[7] + a[15] * b[8]
+	temp_m4[8]  = a[4] * b[5] + a[8] * b[6] + a[12] * b[7] + a[16] * b[8]
+	temp_m4[9]  = a[1] * b[9] + a[5] * b[10] + a[9] * b[11] + a[13] * b[12]
+	temp_m4[10] = a[2] * b[9] + a[6] * b[10] + a[10] * b[11] + a[14] * b[12]
+	temp_m4[11] = a[3] * b[9] + a[7] * b[10] + a[11] * b[11] + a[15] * b[12]
+	temp_m4[12] = a[4] * b[9] + a[8] * b[10] + a[12] * b[11] + a[16] * b[12]
+	temp_m4[13] = a[1] * b[13] + a[5] * b[14] + a[9] * b[15] + a[13] * b[16]
 	temp_m4[14] = a[2] * b[13] + a[6] * b[14] + a[10] * b[15] + a[14] * b[16]
 	temp_m4[15] = a[3] * b[13] + a[7] * b[14] + a[11] * b[15] + a[15] * b[16]
 	temp_m4[16] = a[4] * b[13] + a[8] * b[14] + a[12] * b[15] + a[16] * b[16]
@@ -116,26 +119,26 @@ local function multiply(a, b, result)
 end
 
 local function rotate(e, angle, ax, ay, az, length)
-	local c = math.cos(angle)
-	local s = math.sin(angle)
+	local c    = math.cos(angle)
+	local s    = math.sin(angle)
 
 	local invc = 1.0 - c
 
-	local x = (ax / length) * invc
-	local y = (ay / length) * invc
-	local z = (az / length) * invc
+	local x    = (ax / length) * invc
+	local y    = (ay / length) * invc
+	local z    = (az / length) * invc
 
-	e[1]  = c + x * ax
-	e[2]  = x * ay + s * az
-	e[3]  = x * az - s * ay
+	e[1]       = c + x * ax
+	e[2]       = x * ay + s * az
+	e[3]       = x * az - s * ay
 
-	e[5]  = y * ax - s * az
-	e[6]  = c + y * ay
-	e[7]  = y * az + s * ax
+	e[5]       = y * ax - s * az
+	e[6]       = c + y * ay
+	e[7]       = y * az + s * ax
 
-	e[9]  = z * ax + s * ay
-	e[10] = z * ay - s * ax
-	e[11] = c + z * az
+	e[9]       = z * ax + s * ay
+	e[10]      = z * ay - s * ax
+	e[11]      = c + z * az
 end
 
 local temp_transform = love.math.newTransform()
@@ -144,9 +147,9 @@ local temp_transform = love.math.newTransform()
 function mat4_mt:to_temp_transform_object()
 	local e = self.e
 	temp_transform:setMatrix('column',
-		e[ 1], e[ 2], e[ 3], e[ 4],
-		e[ 5], e[ 6], e[ 7], e[ 8],
-		e[ 9], e[10], e[11], e[12],
+		e[1], e[2], e[3], e[4],
+		e[5], e[6], e[7], e[8],
+		e[9], e[10], e[11], e[12],
 		e[13], e[14], e[15], e[16]
 	)
 	return temp_transform
@@ -156,15 +159,15 @@ end
 function mat4_mt:to_table()
 	local t = {}
 	local e = self.e
-	t[ 1] = e[1]
-	t[ 2] = e[5]
-	t[ 3] = e[9]
-	t[ 4] = e[13]
-	t[ 5] = e[2]
-	t[ 6] = e[6]
-	t[ 7] = e[10]
-	t[ 8] = e[14]
-	t[ 9] = e[3]
+	t[1] = e[1]
+	t[2] = e[5]
+	t[3] = e[9]
+	t[4] = e[13]
+	t[5] = e[2]
+	t[6] = e[6]
+	t[7] = e[10]
+	t[8] = e[14]
+	t[9] = e[3]
 	t[10] = e[7]
 	t[11] = e[11]
 	t[12] = e[15]
@@ -209,14 +212,14 @@ end
 function mat4_mt:determinant()
 	local e = self.e
 
-	local n11, n12, n13, n14 = e[1], e[5], e[ 9], e[13]
+	local n11, n12, n13, n14 = e[1], e[5], e[9], e[13]
 	local n21, n22, n23, n24 = e[2], e[6], e[10], e[14]
 	local n31, n32, n33, n34 = e[3], e[7], e[11], e[15]
 	local n41, n42, n43, n44 = e[4], e[8], e[12], e[16]
 
-	return (n41 * ( n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34)
-		+ n42 * ( n11 * n23 * n34 - n11 * n24 * n33 + n14 * n21 * n33 - n13 * n21 * n34 + n13 * n24 * n31 - n14 * n23 * n31)
-		+ n43 * ( n11 * n24 * n32 - n11 * n22 * n34 - n14 * n21 * n32 + n12 * n21 * n34 + n14 * n22 * n31 - n12 * n24 * n31)
+	return (n41 * (n14 * n23 * n32 - n13 * n24 * n32 - n14 * n22 * n33 + n12 * n24 * n33 + n13 * n22 * n34 - n12 * n23 * n34)
+		+ n42 * (n11 * n23 * n34 - n11 * n24 * n33 + n14 * n21 * n33 - n13 * n21 * n34 + n13 * n24 * n31 - n14 * n23 * n31)
+		+ n43 * (n11 * n24 * n32 - n11 * n22 * n34 - n14 * n21 * n32 + n12 * n21 * n34 + n14 * n22 * n31 - n12 * n24 * n31)
 		+ n44 * (-n13 * n22 * n31 - n11 * n23 * n32 + n11 * n22 * n33 + n13 * n21 * n32 - n12 * n21 * n33 + n12 * n23 * n31)
 	)
 end
@@ -224,25 +227,41 @@ end
 --- inverse
 function mat4_mt:inverse()
 	self._changed = true
-	local e = self.e
-	temp_m4[1]  = e[6] * e[11] * e[16] - e[6] * e[12] * e[15] - e[10] * e[7] * e[16] + e[10] * e[8] * e[15] + e[14] * e[7] * e[12] - e[14] * e[8] * e[11]
-	temp_m4[5]  =-e[5] * e[11] * e[16] + e[5] * e[12] * e[15] + e[9]  * e[7] * e[16] - e[9]  * e[8] * e[15] - e[13] * e[7] * e[12] + e[13] * e[8] * e[11]
-	temp_m4[9]  = e[5] * e[10] * e[16] - e[5] * e[12] * e[14] - e[9]  * e[6] * e[16] + e[9]  * e[8] * e[14] + e[13] * e[6] * e[12] - e[13] * e[8] * e[10]
-	temp_m4[13] =-e[5] * e[10] * e[15] + e[5] * e[11] * e[14] + e[9]  * e[6] * e[15] - e[9]  * e[7] * e[14] - e[13] * e[6] * e[11] + e[13] * e[7] * e[10]
-	temp_m4[2]  =-e[2] * e[11] * e[16] + e[2] * e[12] * e[15] + e[10] * e[3] * e[16] - e[10] * e[4] * e[15] - e[14] * e[3] * e[12] + e[14] * e[4] * e[11]
-	temp_m4[6]  = e[1] * e[11] * e[16] - e[1] * e[12] * e[15] - e[9]  * e[3] * e[16] + e[9]  * e[4] * e[15] + e[13] * e[3] * e[12] - e[13] * e[4] * e[11]
-	temp_m4[10] =-e[1] * e[10] * e[16] + e[1] * e[12] * e[14] + e[9]  * e[2] * e[16] - e[9]  * e[4] * e[14] - e[13] * e[2] * e[12] + e[13] * e[4] * e[10]
-	temp_m4[14] = e[1] * e[10] * e[15] - e[1] * e[11] * e[14] - e[9]  * e[2] * e[15] + e[9]  * e[3] * e[14] + e[13] * e[2] * e[11] - e[13] * e[3] * e[10]
-	temp_m4[3]  = e[2] * e[7]  * e[16] - e[2] * e[8]  * e[15] - e[6]  * e[3] * e[16] + e[6]  * e[4] * e[15] + e[14] * e[3] * e[8]  - e[14] * e[4] * e[7]
-	temp_m4[7]  =-e[1] * e[7]  * e[16] + e[1] * e[8]  * e[15] + e[5]  * e[3] * e[16] - e[5]  * e[4] * e[15] - e[13] * e[3] * e[8]  + e[13] * e[4] * e[7]
-	temp_m4[11] = e[1] * e[6]  * e[16] - e[1] * e[8]  * e[14] - e[5]  * e[2] * e[16] + e[5]  * e[4] * e[14] + e[13] * e[2] * e[8]  - e[13] * e[4] * e[6]
-	temp_m4[15] =-e[1] * e[6]  * e[15] + e[1] * e[7]  * e[14] + e[5]  * e[2] * e[15] - e[5]  * e[3] * e[14] - e[13] * e[2] * e[7]  + e[13] * e[3] * e[6]
-	temp_m4[4]  =-e[2] * e[7]  * e[12] + e[2] * e[8]  * e[11] + e[6]  * e[3] * e[12] - e[6]  * e[4] * e[11] - e[10] * e[3] * e[8]  + e[10] * e[4] * e[7]
-	temp_m4[8]  = e[1] * e[7]  * e[12] - e[1] * e[8]  * e[11] - e[5]  * e[3] * e[12] + e[5]  * e[4] * e[11] + e[9]  * e[3] * e[8]  - e[9]  * e[4] * e[7]
-	temp_m4[12] =-e[1] * e[6]  * e[12] + e[1] * e[8]  * e[10] + e[5]  * e[2] * e[12] - e[5]  * e[4] * e[10] - e[9]  * e[2] * e[8]  + e[9]  * e[4] * e[6]
-	temp_m4[16] = e[1] * e[6]  * e[11] - e[1] * e[7]  * e[10] - e[5]  * e[2] * e[11] + e[5]  * e[3] * e[10] + e[9]  * e[2] * e[7]  - e[9]  * e[3] * e[6]
+	local e       = self.e
+	temp_m4[1]    = e[6] * e[11] * e[16] - e[6] * e[12] * e[15] - e[10] * e[7] * e[16] + e[10] * e[8] * e[15] +
+		e[14] * e[7] * e[12] - e[14] * e[8] * e[11]
+	temp_m4[5]    = -e[5] * e[11] * e[16] + e[5] * e[12] * e[15] + e[9] * e[7] * e[16] - e[9] * e[8] * e[15] -
+		e[13] * e[7] * e[12] + e[13] * e[8] * e[11]
+	temp_m4[9]    = e[5] * e[10] * e[16] - e[5] * e[12] * e[14] - e[9] * e[6] * e[16] + e[9] * e[8] * e[14] +
+		e[13] * e[6] * e[12] - e[13] * e[8] * e[10]
+	temp_m4[13]   = -e[5] * e[10] * e[15] + e[5] * e[11] * e[14] + e[9] * e[6] * e[15] - e[9] * e[7] * e[14] -
+		e[13] * e[6] * e[11] + e[13] * e[7] * e[10]
+	temp_m4[2]    = -e[2] * e[11] * e[16] + e[2] * e[12] * e[15] + e[10] * e[3] * e[16] - e[10] * e[4] * e[15] -
+		e[14] * e[3] * e[12] + e[14] * e[4] * e[11]
+	temp_m4[6]    = e[1] * e[11] * e[16] - e[1] * e[12] * e[15] - e[9] * e[3] * e[16] + e[9] * e[4] * e[15] +
+		e[13] * e[3] * e[12] - e[13] * e[4] * e[11]
+	temp_m4[10]   = -e[1] * e[10] * e[16] + e[1] * e[12] * e[14] + e[9] * e[2] * e[16] - e[9] * e[4] * e[14] -
+		e[13] * e[2] * e[12] + e[13] * e[4] * e[10]
+	temp_m4[14]   = e[1] * e[10] * e[15] - e[1] * e[11] * e[14] - e[9] * e[2] * e[15] + e[9] * e[3] * e[14] +
+		e[13] * e[2] * e[11] - e[13] * e[3] * e[10]
+	temp_m4[3]    = e[2] * e[7] * e[16] - e[2] * e[8] * e[15] - e[6] * e[3] * e[16] + e[6] * e[4] * e[15] +
+		e[14] * e[3] * e[8] - e[14] * e[4] * e[7]
+	temp_m4[7]    = -e[1] * e[7] * e[16] + e[1] * e[8] * e[15] + e[5] * e[3] * e[16] - e[5] * e[4] * e[15] -
+		e[13] * e[3] * e[8] + e[13] * e[4] * e[7]
+	temp_m4[11]   = e[1] * e[6] * e[16] - e[1] * e[8] * e[14] - e[5] * e[2] * e[16] + e[5] * e[4] * e[14] +
+		e[13] * e[2] * e[8] - e[13] * e[4] * e[6]
+	temp_m4[15]   = -e[1] * e[6] * e[15] + e[1] * e[7] * e[14] + e[5] * e[2] * e[15] - e[5] * e[3] * e[14] -
+		e[13] * e[2] * e[7] + e[13] * e[3] * e[6]
+	temp_m4[4]    = -e[2] * e[7] * e[12] + e[2] * e[8] * e[11] + e[6] * e[3] * e[12] - e[6] * e[4] * e[11] -
+		e[10] * e[3] * e[8] + e[10] * e[4] * e[7]
+	temp_m4[8]    = e[1] * e[7] * e[12] - e[1] * e[8] * e[11] - e[5] * e[3] * e[12] + e[5] * e[4] * e[11] +
+		e[9] * e[3] * e[8] - e[9] * e[4] * e[7]
+	temp_m4[12]   = -e[1] * e[6] * e[12] + e[1] * e[8] * e[10] + e[5] * e[2] * e[12] - e[5] * e[4] * e[10] -
+		e[9] * e[2] * e[8] + e[9] * e[4] * e[6]
+	temp_m4[16]   = e[1] * e[6] * e[11] - e[1] * e[7] * e[10] - e[5] * e[2] * e[11] + e[5] * e[3] * e[10] +
+		e[9] * e[2] * e[7] - e[9] * e[3] * e[6]
 
-	local det = e[1] * temp_m4[1] + e[2] * temp_m4[5] + e[3] * temp_m4[9] + e[4] * temp_m4[13]
+	local det     = e[1] * temp_m4[1] + e[2] * temp_m4[5] + e[3] * temp_m4[9] + e[4] * temp_m4[13]
 	copy(e, temp_m4)
 
 	if det ~= 0.0 then
@@ -256,8 +275,8 @@ end
 
 --- transpose
 function mat4_mt:transpose()
-	self._changed = true
-	local e = self.e
+	self._changed  = true
+	local e        = self.e
 	temp_array[1]  = e[1]
 	temp_array[2]  = e[5]
 	temp_array[3]  = e[9]
@@ -280,8 +299,8 @@ end
 
 --- compose
 function mat4_mt:compose(position, rotation, scale)
-	self._changed = true
-	local e = self.e
+	self._changed    = true
+	local e          = self.e
 
 	local x, y, z, w = rotation.x, rotation.y, rotation.z, rotation.w
 	local x2, y2, z2 = x + x, y + y, z + z
@@ -292,22 +311,22 @@ function mat4_mt:compose(position, rotation, scale)
 
 	local sx, sy, sz = scale.x, scale.y, scale.z
 
-	e[1]  = (1 - (yy + zz)) * sx
-	e[2]  = (xy + wz) * sx
-	e[3]  = (xz - wy) * sx
-	e[4]  = 0
-	e[5]  = (xy - wz) * sy
-	e[6]  = (1 - (xx + zz)) * sy
-	e[7]  = (yz + wx) * sy
-	e[8]  = 0
-	e[9]  = (xz + wy) * sz
-	e[10] = (yz - wx) * sz
-	e[11] = (1 - (xx + yy)) * sz
-	e[12] = 0
-	e[13] = position.x
-	e[14] = position.y
-	e[15] = position.z
-	e[16] = 1
+	e[1]             = (1 - (yy + zz)) * sx
+	e[2]             = (xy + wz) * sx
+	e[3]             = (xz - wy) * sx
+	e[4]             = 0
+	e[5]             = (xy - wz) * sy
+	e[6]             = (1 - (xx + zz)) * sy
+	e[7]             = (yz + wx) * sy
+	e[8]             = 0
+	e[9]             = (xz + wy) * sz
+	e[10]            = (yz - wx) * sz
+	e[11]            = (1 - (xx + yy)) * sz
+	e[12]            = 0
+	e[13]            = position.x
+	e[14]            = position.y
+	e[15]            = position.z
+	e[16]            = 1
 	return self
 end
 
@@ -320,8 +339,8 @@ function mat4_mt:decompose(position, rotation, scale)
 		position:set_from_matrix_position(self)
 	end
 	if rotation or scale then
-		local sx = tvec3:set(e[1], e[ 2], e[ 3]):length()
-		local sy = tvec3:set(e[5], e[ 6], e[ 7]):length()
+		local sx = tvec3:set(e[1], e[2], e[3]):length()
+		local sy = tvec3:set(e[5], e[6], e[7]):length()
 		local sz = tvec3:set(e[9], e[10], e[11]):length()
 
 		if self:determinant() < 0 then sx = -sx end
@@ -338,15 +357,15 @@ function mat4_mt:decompose(position, rotation, scale)
 			local invSY = 1 / sy
 			local invSZ = 1 / sz
 
-			temp_array[ 1] = temp_array[ 1] * invSX
-			temp_array[ 2] = temp_array[ 2] * invSX
-			temp_array[ 3] = temp_array[ 3] * invSX
+			temp_array[1] = temp_array[1] * invSX
+			temp_array[2] = temp_array[2] * invSX
+			temp_array[3] = temp_array[3] * invSX
 
-			temp_array[ 5] = temp_array[ 5] * invSY
-			temp_array[ 6] = temp_array[ 6] * invSY
-			temp_array[ 7] = temp_array[ 7] * invSY
+			temp_array[5] = temp_array[5] * invSY
+			temp_array[6] = temp_array[6] * invSY
+			temp_array[7] = temp_array[7] * invSY
 
-			temp_array[ 9] = temp_array[ 9] * invSZ
+			temp_array[9] = temp_array[9] * invSZ
 			temp_array[10] = temp_array[10] * invSZ
 			temp_array[11] = temp_array[11] * invSZ
 
@@ -366,10 +385,10 @@ function mat4_mt:set_position_and_rotation(position, angle, axis)
 	if length ~= 0 then
 		rotate(temp_array, angle, axis.x, axis.y, axis.z, length)
 
-		temp_array[4], temp_array[8],  temp_array[12] = 0, 0, 0
+		temp_array[4], temp_array[8], temp_array[12] = 0, 0, 0
 	else
-		temp_array[1], temp_array[2],  temp_array[3]  = 0, 0, 0
-		temp_array[5], temp_array[6],  temp_array[7]  = 0, 0, 0
+		temp_array[1], temp_array[2], temp_array[3]   = 0, 0, 0
+		temp_array[5], temp_array[6], temp_array[7]   = 0, 0, 0
 		temp_array[9], temp_array[10], temp_array[11] = 0, 0, 0
 	end
 
@@ -443,35 +462,35 @@ end
 
 --- reflect
 function mat4_mt:reflect(position, normal)
-	self._changed = true
+	self._changed    = true
 	local nx, ny, nz = normal:unpack()
-	local d = vec3.dot(-position, normal)
-	temp_array[1]  = 1 - 2 * nx ^ 2
-	temp_array[2]  = 2 * nx * ny
-	temp_array[3]  =-2 * nx * nz
-	temp_array[4]  = 0
-	temp_array[5]  =-2 * nx * ny
-	temp_array[6]  = 1 - 2 * ny ^ 2
-	temp_array[7]  =-2 * ny * nz
-	temp_array[8]  = 0
-	temp_array[9]  =-2 * nx * nz
-	temp_array[10]  =-2 * ny * nz
-	temp_array[11] = 1 - 2 * nz ^ 2
-	temp_array[12] = 0
-	temp_array[13] =-2 * nx * d
-	temp_array[14] =-2 * ny * d
-	temp_array[15] =-2 * nz * d
-	temp_array[16] = 1
+	local d          = vec3.dot(-position, normal)
+	temp_array[1]    = 1 - 2 * nx ^ 2
+	temp_array[2]    = 2 * nx * ny
+	temp_array[3]    = -2 * nx * nz
+	temp_array[4]    = 0
+	temp_array[5]    = -2 * nx * ny
+	temp_array[6]    = 1 - 2 * ny ^ 2
+	temp_array[7]    = -2 * ny * nz
+	temp_array[8]    = 0
+	temp_array[9]    = -2 * nx * nz
+	temp_array[10]   = -2 * ny * nz
+	temp_array[11]   = 1 - 2 * nz ^ 2
+	temp_array[12]   = 0
+	temp_array[13]   = -2 * nx * d
+	temp_array[14]   = -2 * ny * d
+	temp_array[15]   = -2 * nz * d
+	temp_array[16]   = 1
 
 	multiply(self.e, temp_array)
 	return self
 end
 
 local function look_at_LH(self, eye, center, up)
-	self._changed = true
-	local f = (center - eye):normalize()
-	local s = vec3.cross(up, f):normalize()
-	local u = vec3.cross(f, s)
+	self._changed  = true
+	local f        = (center - eye):normalize()
+	local s        = vec3.cross(up, f):normalize()
+	local u        = vec3.cross(f, s)
 
 	temp_array[1]  = s.x
 	temp_array[2]  = u.x
@@ -495,26 +514,26 @@ local function look_at_LH(self, eye, center, up)
 end
 
 local function look_at_RH(self, eye, center, up)
-	self._changed = true
-	local f = (center - eye):normalize()
-	local s = vec3.cross(f, up):normalize()
-	local u = vec3.cross(s, f)
+	self._changed  = true
+	local f        = (center - eye):normalize()
+	local s        = vec3.cross(f, up):normalize()
+	local u        = vec3.cross(s, f)
 
 	temp_array[1]  = s.x
 	temp_array[2]  = u.x
-	temp_array[3]  =-f.x
+	temp_array[3]  = -f.x
 	temp_array[4]  = 0
 	temp_array[5]  = s.y
 	temp_array[6]  = u.y
-	temp_array[7]  =-f.y
+	temp_array[7]  = -f.y
 	temp_array[8]  = 0
 	temp_array[9]  = s.z
 	temp_array[10] = u.z
-	temp_array[11] =-f.z
+	temp_array[11] = -f.z
 	temp_array[12] = 0
 	temp_array[13] = -vec3.dot(s, eye)
 	temp_array[14] = -vec3.dot(u, eye)
-	temp_array[15] =  vec3.dot(f, eye)
+	temp_array[15] = vec3.dot(f, eye)
 	temp_array[16] = 1
 
 	multiply(self.e, temp_array)
@@ -522,10 +541,10 @@ local function look_at_RH(self, eye, center, up)
 end
 
 local function look_at_np(self, eye, look_at, up)
-	self._changed = true
-	local z_axis = (eye - look_at):normalize()
-	local x_axis = vec3.cross(up, z_axis):normalize()
-	local y_axis = vec3.cross(z_axis, x_axis)
+	self._changed  = true
+	local z_axis   = (eye - look_at):normalize()
+	local x_axis   = vec3.cross(up, z_axis):normalize()
+	local y_axis   = vec3.cross(z_axis, x_axis)
 
 	temp_array[1]  = x_axis.x
 	temp_array[2]  = y_axis.x
@@ -552,7 +571,7 @@ end
 function mat4_mt:multiply_vec4(v, out)
 	out = out or vec4()
 	local e = self.e
-	temp_a4[1] = v.x * e[1] + v.y * e[5] + v.z * e[9]  + v.w * e[13]
+	temp_a4[1] = v.x * e[1] + v.y * e[5] + v.z * e[9] + v.w * e[13]
 	temp_a4[2] = v.x * e[2] + v.y * e[6] + v.z * e[10] + v.w * e[14]
 	temp_a4[3] = v.x * e[3] + v.y * e[7] + v.z * e[11] + v.w * e[15]
 	temp_a4[4] = v.x * e[4] + v.y * e[8] + v.z * e[12] + v.w * e[16]
@@ -567,7 +586,7 @@ end
 function mat4_mt:multiply_vec3(v, out)
 	out = out or vec3()
 	local e = self.e
-	temp_a4[1] = v.x * e[1] + v.y * e[5] + v.z * e[9]  + e[13]
+	temp_a4[1] = v.x * e[1] + v.y * e[5] + v.z * e[9] + e[13]
 	temp_a4[2] = v.x * e[2] + v.y * e[6] + v.z * e[10] + e[14]
 	temp_a4[3] = v.x * e[3] + v.y * e[7] + v.z * e[11] + e[15]
 	out.x = temp_a4[1]
@@ -580,7 +599,7 @@ end
 function mat4_mt:multiply_vec3_array(v, out)
 	out = out or {}
 	local e = self.e
-	temp_a4[1] = v[1] * e[1] + v[2] * e[5] + v[3] * e[9]  + e[13]
+	temp_a4[1] = v[1] * e[1] + v[2] * e[5] + v[3] * e[9] + e[13]
 	temp_a4[2] = v[1] * e[2] + v[2] * e[6] + v[3] * e[10] + e[14]
 	temp_a4[3] = v[1] * e[3] + v[2] * e[7] + v[3] * e[11] + e[15]
 	out[1] = temp_a4[1]
@@ -593,7 +612,7 @@ end
 function mat4_mt:multiply_vec4_array(v, out)
 	out = out or {}
 	local e = self.e
-	temp_a4[1] = v[1] * e[1] + v[2] * e[5] + v[3] * e[9]  + v[4] * e[13]
+	temp_a4[1] = v[1] * e[1] + v[2] * e[5] + v[3] * e[9] + v[4] * e[13]
 	temp_a4[2] = v[1] * e[2] + v[2] * e[6] + v[3] * e[10] + v[4] * e[14]
 	temp_a4[3] = v[1] * e[3] + v[2] * e[7] + v[3] * e[11] + v[4] * e[15]
 	temp_a4[4] = v[1] * e[4] + v[2] * e[8] + v[3] * e[12] + v[4] * e[16]
@@ -615,12 +634,12 @@ local function perspective_RH_NO(self, fovy, aspect, near, far)
 
 	local tanhf = math.tan(math.rad(fovy) / 2)
 
-	e[1]  = 1 / (tanhf * aspect)
-	e[6]  = 1 / tanhf
-	e[11] =-(far + near) / (far - near)
-	e[12] =-1
-	e[15] =-(2 * far * near) / (far - near)
-	e[16] = 0
+	e[1]        = 1 / (tanhf * aspect)
+	e[6]        = 1 / tanhf
+	e[11]       = -(far + near) / (far - near)
+	e[12]       = -1
+	e[15]       = -(2 * far * near) / (far - near)
+	e[16]       = 0
 
 	return self
 end
@@ -636,12 +655,12 @@ local function perspective_LH_NO(self, fovy, aspect, near, far)
 
 	local tanhf = math.tan(math.rad(fovy) / 2)
 
-	e[1]  = 1 / (tanhf * aspect)
-	e[6]  = 1 / tanhf
-	e[11] = (far + near) / (far - near)
-	e[12] = 1
-	e[15] =-(2 * far * near) / (far - near)
-	e[16] = 0
+	e[1]        = 1 / (tanhf * aspect)
+	e[6]        = 1 / tanhf
+	e[11]       = (far + near) / (far - near)
+	e[12]       = 1
+	e[15]       = -(2 * far * near) / (far - near)
+	e[16]       = 0
 
 	return self
 end
@@ -665,8 +684,8 @@ local function ortho_RH_NO(self, left, right, bottom, top, zNear, zFar)
 	self._changed = true
 	local e = self.e
 	identity(e)
-	e[1]  =  2 / (right - left)
-	e[6]  =  2 / (top - bottom)
+	e[1]  = 2 / (right - left)
+	e[6]  = 2 / (top - bottom)
 	e[11] = -2 / (zFar - zNear)
 	e[13] = -(right + left) / (right - left)
 	e[14] = -(top + bottom) / (top - bottom)
@@ -674,14 +693,14 @@ local function ortho_RH_NO(self, left, right, bottom, top, zNear, zFar)
 	return self
 end
 
-mat4_mt.look_at    = look_at_LH
-mat4_mt.look_at_LH = look_at_LH
-mat4_mt.look_at_RH = look_at_RH
-mat4_mt.look_at_np = look_at_np
+mat4_mt.look_at           = look_at_LH
+mat4_mt.look_at_LH        = look_at_LH
+mat4_mt.look_at_RH        = look_at_RH
+mat4_mt.look_at_np        = look_at_np
 
-mat4_mt.ortho       = ortho_LH_NO
-mat4_mt.ortho_LH_NO = ortho_LH_NO
-mat4_mt.ortho_RH_NO = ortho_RH_NO
+mat4_mt.ortho             = ortho_LH_NO
+mat4_mt.ortho_LH_NO       = ortho_LH_NO
+mat4_mt.ortho_RH_NO       = ortho_RH_NO
 
 mat4_mt.perspective       = perspective_LH_NO
 mat4_mt.perspective_LH_NO = perspective_LH_NO
@@ -695,10 +714,10 @@ end
 --- unpack
 function mat4_mt:unpack()
 	local e = self.e
-	return e[ 1], e[ 2], e[ 3], e[ 4],
-		 e[ 5], e[ 6], e[ 7], e[ 8],
-		 e[ 9], e[10], e[11], e[12],
-		 e[13], e[14], e[15], e[16]
+	return e[1], e[2], e[3], e[4],
+		e[5], e[6], e[7], e[8],
+		e[9], e[10], e[11], e[12],
+		e[13], e[14], e[15], e[16]
 end
 
 -- metamethods --
@@ -729,7 +748,7 @@ function mat4_mt.__tostring(a)
 	for i = 0, 3 do
 		str = str .. '\t'
 		for j = 0, 3 do
-			str = str .. string.format("%+0.3f", a.e[i+j*4+1])
+			str = str .. string.format("%+0.3f", a.e[i + j * 4 + 1])
 			str = str .. ", "
 		end
 		str = str .. '\n'
@@ -775,6 +794,8 @@ function mat4.unproject(win, model, proj, viewport)
 	return vec3(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w)
 end
 
-return setmetatable(mat4, { __call = function(_, m)
-	return new(m)
-end })
+return setmetatable(mat4, {
+	__call = function(_, m)
+		return new(m)
+	end
+})

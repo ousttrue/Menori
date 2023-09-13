@@ -10,14 +10,14 @@
 Vector2.
 menori.ml.vec2
 ]]
--- @classmod vec2
--- @alias vec2_mt
 
 local modules = (...):gsub('%.[^%.]+$', '') .. "."
 local utils = require(modules .. "utils")
 
-local vec2 = {}
+---@class vec2
 local vec2_mt = {}
+---@class vec2
+local vec2 = {}
 vec2_mt.__index = vec2_mt
 
 local function new(x, y)
@@ -290,10 +290,12 @@ function vec2.pow(a, b)
 	)
 end
 
-return setmetatable(vec2, { __call = function(_, x, y)
-	if type(x) == 'table' then
-		local xx, yy = x.x or x[1], x.y or x[2]
-		return new(xx, yy)
+return setmetatable(vec2, {
+	__call = function(_, x, y)
+		if type(x) == 'table' then
+			local xx, yy = x.x or x[1], x.y or x[2]
+			return new(xx, yy)
+		end
+		return new(x, y)
 	end
-	return new(x, y)
-end })
+})

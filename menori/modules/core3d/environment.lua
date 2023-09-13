@@ -10,18 +10,21 @@
 An environment is a class that sends information about the current settings of the environment
 (such as ambient color, fog, light sources, camera transformation matrices) etc to the shader.
 ]]
--- @classmod Environment
 
-local modules = (...):match('(.*%menori.modules.)')
+local modules           = (...):match('(.*%menori.modules.)')
 
-local utils       = require (modules .. 'libs.utils')
-local UniformList = require (modules .. 'core3d.uniform_list')
-local ml          = require (modules .. 'ml')
+local utils             = require(modules .. 'libs.utils')
+local UniformList       = require(modules .. 'core3d.uniform_list')
+local ml                = require(modules .. 'ml')
 
-local Environment = UniformList:extend('Environment')
+---@class Environment: UniformList
+---@field camera (Camera|PerspectiveCamera) Camera object associated with the current Environment.
+---@field uniform_list UniformList UniformList object. Uniforms in the list are automatically sent to the shader, which will be used to display objects with this environment.
+---@field lights table List of light sources.
+local Environment       = UniformList:extend('Environment')
 
 local temp_projection_m = ml.mat4()
-local temp_int_view_m = ml.mat4()
+local temp_int_view_m   = ml.mat4()
 
 ----
 -- The public constructor.
@@ -37,8 +40,8 @@ end
 
 ----
 -- Add light source.
----@param uniform_name strign Name of uniform used in the shader
----@param light menori.UniformList Light source object
+---@param uniform_name string Name of uniform used in the shader
+---@param light UniformList Light source object
 function Environment:add_light(uniform_name, light)
 	local t = self.lights[uniform_name] or {}
 	self.lights[uniform_name] = t
@@ -77,10 +80,10 @@ end
 -- @param [LOVE shader Shader](https://love2d.org/wiki/Shader)
 function Environment:apply_shader(shader)
 	--if self._shader_object_cache ~= shader then
-		love.graphics.setShader(shader)
+	love.graphics.setShader(shader)
 
-		self:send_uniforms_to(shader)
-		self._shader_object_cache = shader
+	self:send_uniforms_to(shader)
+	self._shader_object_cache = shader
 	--end
 end
 
@@ -99,15 +102,3 @@ function Environment:send_light_sources_to(shader)
 end
 
 return Environment
-
----
--- Camera object associated with the current Environment.
--- @field camera (menori.Camera or menori.PerspectiveCamera)
-
----
--- UniformList object. Uniforms in the list are automatically sent to the shader, which will be used to display objects with this environment.
----@field menori.UniformList uniform_list
-
----
--- List of light sources.
----@field table lights

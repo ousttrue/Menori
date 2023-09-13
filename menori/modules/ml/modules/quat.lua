@@ -16,25 +16,25 @@
 Quaternion.
 menori.ml.quat
 ]]
--- @classmod quat
--- @alias quat_mt
 
-local modules = (...):gsub('%.[^%.]+$', '') .. "."
-local vec3 = require(modules .. "vec3")
-local mat4 = require(modules .. "mat4")
+local modules       = (...):gsub('%.[^%.]+$', '') .. "."
+local vec3          = require(modules .. "vec3")
+local mat4          = require(modules .. "mat4")
 
 local DOT_THRESHOLD = 0.9995
-local DBL_EPSILON = 2.2204460492503131e-16
-local sqrt = math.sqrt
-local acos = math.acos
-local cos  = math.cos
-local sin  = math.sin
-local min  = math.min
-local max  = math.max
+local DBL_EPSILON   = 2.2204460492503131e-16
+local sqrt          = math.sqrt
+local acos          = math.acos
+local cos           = math.cos
+local sin           = math.sin
+local min           = math.min
+local max           = math.max
 
-local quat = {}
-local quat_mt = {}
-quat_mt.__index = quat_mt
+---@class quat
+local quat_mt       = {}
+---@class quat
+local quat          = {}
+quat_mt.__index     = quat_mt
 
 local function new(x, y, z, w)
 	return setmetatable({
@@ -53,7 +53,7 @@ quat.zero = new(0, 0, 0, 0)
 
 --- clone
 function quat_mt:clone()
-    	return new(self.x, self.y, self.z, self.w)
+	return new(self.x, self.y, self.z, self.w)
 end
 
 --- set
@@ -99,7 +99,6 @@ function quat_mt:mul(other)
 	return self
 end
 
-
 -- http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
 --- set from matrix rotation
 function quat_mt:set_from_matrix_rotation(m)
@@ -107,9 +106,9 @@ function quat_mt:set_from_matrix_rotation(m)
 	--local m11, m12, m13 = e[1], e[ 2], e[ 3]
 	--local m21, m22, m23 = e[5], e[ 6], e[ 7]
 	--local m31, m32, m33 = e[9], e[10], e[11]
-	local m11, m12, m13 = e[1], e[ 5], e[ 9]
-	local m21, m22, m23 = e[2], e[ 6], e[10]
-	local m31, m32, m33 = e[3], e[ 7], e[11]
+	local m11, m12, m13 = e[1], e[5], e[9]
+	local m21, m22, m23 = e[2], e[6], e[10]
+	local m31, m32, m33 = e[3], e[7], e[11]
 
 	local tr = (m11 + m22) + m33
 
@@ -192,7 +191,7 @@ function quat_mt:inverse()
 	temp_q.x = -self.x
 	temp_q.y = -self.y
 	temp_q.z = -self.z
-	temp_q.w =  self.w
+	temp_q.w = self.w
 	return temp_q:clone():normalize()
 end
 
@@ -214,7 +213,7 @@ function quat_mt:reciprocal()
 	temp_q.x = -self.x
 	temp_q.y = -self.y
 	temp_q.z = -self.z
-	temp_q.w =  self.w
+	temp_q.w = self.w
 
 	temp_q:scale(1 / self:length2())
 	self.x = temp_q.x
@@ -270,7 +269,7 @@ function quat_mt:to_angle_axis_unpack()
 
 	local x, y, z
 	local angle = 2 * acos(q.w)
-	local s = sqrt(1-q.w * q.w)
+	local s = sqrt(1 - q.w * q.w)
 
 	if s > DBL_EPSILON then
 		x, y, z = q.x / s, q.y / s, q.z / s
@@ -288,84 +287,84 @@ function quat_mt:to_angle_axis()
 end
 
 --- clamp
-local function clamp( value, _min, _max )
-	return math.max( _min, math.min( _max, value ) )
+local function clamp(value, _min, _max)
+	return math.max(_min, math.min(_max, value))
 end
 
 --- to euler angles
 function quat_mt:to_euler(order)
 	order = order or 'XYZ'
-      local m = mat4():rotate(self)
+	local m = mat4():rotate(self)
 	local e = m.e
-	local m11, m12, m13 = e[1], e[5], e[ 9]
+	local m11, m12, m13 = e[1], e[5], e[9]
 	local m21, m22, m23 = e[2], e[6], e[10]
 	local m31, m32, m33 = e[3], e[7], e[11]
 
 	local x, y, z
 	if
-	order == 'XYZ' then
-		y = math.asin( clamp( m13, -1, 1 ) )
+		order == 'XYZ' then
+		y = math.asin(clamp(m13, -1, 1))
 
-		if math.abs( m13 ) < 0.9999999 then
-			x = math.atan2( - m23, m33 )
-			z = math.atan2( - m12, m11 )
+		if math.abs(m13) < 0.9999999 then
+			x = math.atan2(-m23, m33)
+			z = math.atan2(-m12, m11)
 		else
-			x = math.atan2( m32, m22 )
+			x = math.atan2(m32, m22)
 			z = 0
 		end
 	elseif
-	order == 'YXZ' then
-		x = math.asin(-clamp( m23, - 1, 1 ) )
+		order == 'YXZ' then
+		x = math.asin(-clamp(m23, -1, 1))
 
-		if math.abs( m23 ) < 0.9999999 then
-			y = math.atan2( m13, m33 )
-			z = math.atan2( m21, m22 )
+		if math.abs(m23) < 0.9999999 then
+			y = math.atan2(m13, m33)
+			z = math.atan2(m21, m22)
 		else
-			y = math.atan2( - m31, m11 )
+			y = math.atan2(-m31, m11)
 			z = 0
 		end
 	elseif
-	order == 'ZXY' then
-		x = math.asin( clamp( m32, - 1, 1 ) )
+		order == 'ZXY' then
+		x = math.asin(clamp(m32, -1, 1))
 
-		if math.abs( m32 ) < 0.9999999 then
-			y = math.atan2( - m31, m33 )
-			z = math.atan2( - m12, m22 )
+		if math.abs(m32) < 0.9999999 then
+			y = math.atan2(-m31, m33)
+			z = math.atan2(-m12, m22)
 		else
 			y = 0
-			z = math.atan2( m21, m11 )
+			z = math.atan2(m21, m11)
 		end
 	elseif
-	order == 'ZYX' then
-		y = math.asin(-clamp( m31, - 1, 1 ) )
+		order == 'ZYX' then
+		y = math.asin(-clamp(m31, -1, 1))
 
-		if math.abs( m31 ) < 0.9999999 then
-			x = math.atan2( m32, m33 )
-			z = math.atan2( m21, m11 )
+		if math.abs(m31) < 0.9999999 then
+			x = math.atan2(m32, m33)
+			z = math.atan2(m21, m11)
 		else
 			x = 0
-			z = math.atan2( - m12, m22 )
+			z = math.atan2(-m12, m22)
 		end
 	elseif
-	order == 'YZX' then
-		z = math.asin( clamp( m21, - 1, 1 ) )
+		order == 'YZX' then
+		z = math.asin(clamp(m21, -1, 1))
 
-		if math.abs( m21 ) < 0.9999999 then
-			x = math.atan2( - m23, m22 )
-			y = math.atan2( - m31, m11 )
+		if math.abs(m21) < 0.9999999 then
+			x = math.atan2(-m23, m22)
+			y = math.atan2(-m31, m11)
 		else
 			x = 0
-			y = math.atan2( m13, m33 )
+			y = math.atan2(m13, m33)
 		end
 	elseif
-	order == 'XZY' then
-		z = math.asin(-clamp( m12, - 1, 1 ) )
+		order == 'XZY' then
+		z = math.asin(-clamp(m12, -1, 1))
 
-		if math.abs( m12 ) < 0.9999999 then
-			x = math.atan2( m32, m22 )
-			y = math.atan2( m13, m11 )
+		if math.abs(m12) < 0.9999999 then
+			x = math.atan2(m32, m22)
+			y = math.atan2(m13, m11)
 		else
-			x = math.atan2( - m23, m33 )
+			x = math.atan2(-m23, m33)
 			y = 0
 		end
 	end
@@ -401,7 +400,8 @@ end
 
 function quat_mt.__mul(a, b)
 	assert(quat.is_quat(a), "__mul: Wrong type for a argument. (<quat> expected)")
-	assert(quat.is_quat(b) or vec3.is_vec3(b) or type(b) == "number", "__mul: Wrong type for b argument. (<quat> or <vec3> or <number> expected)")
+	assert(quat.is_quat(b) or vec3.is_vec3(b) or type(b) == "number",
+		"__mul: Wrong type for b argument. (<quat> or <vec3> or <number> expected)")
 
 	if quat.is_quat(b) then
 		return a:clone():mul(b)
@@ -505,17 +505,19 @@ end
 -- @static
 function quat.is_quat(a)
 	return
-		type(a)   == "table"  and
+		type(a) == "table" and
 		type(a.x) == "number" and
 		type(a.y) == "number" and
 		type(a.z) == "number" and
 		type(a.w) == "number"
 end
 
-return setmetatable(quat, { __call = function(_, x, y, z, w)
-	if type(x) == 'table' then
-		local xx, yy, zz, ww = x.x or x[1], x.y or x[2], x.z or x[3], x.w or x[4]
-		return new(xx, yy, zz, ww)
+return setmetatable(quat, {
+	__call = function(_, x, y, z, w)
+		if type(x) == 'table' then
+			local xx, yy, zz, ww = x.x or x[1], x.y or x[2], x.z or x[3], x.w or x[4]
+			return new(xx, yy, zz, ww)
+		end
+		return new(x, y, z, w)
 	end
-	return new(x, y, z, w)
-end })
+})

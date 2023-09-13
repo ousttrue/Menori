@@ -64,16 +64,17 @@ end
 
 --- Add scene to the scene list.
 ---@param name string
----@param scene menori.Scene object
+---@param scene Scene object
 function app_mt:add_scene(name, scene)
       self.scenes[name] = scene
 end
 
 --- Get scene from the scene list by the name.
 ---@param name string
----@return menori.Scene object
+---@return Scene object
 function app_mt:set_scene(name)
       self.current_scene = self.scenes[name]
+      return self.current_scene
 end
 
 --- Main update function.

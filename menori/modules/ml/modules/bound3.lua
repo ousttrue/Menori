@@ -10,14 +10,14 @@
 Bound3.
 menori.ml.bound3
 ]]
--- @classmod bound3
--- @alias bound3_mt
 
-local modules = (...):gsub('%.[^%.]+$', '') .. "."
-local vec3    = require(modules .. "vec3")
+local modules     = (...):gsub('%.[^%.]+$', '') .. "."
+local vec3        = require(modules .. "vec3")
 
-local bound3 = {}
-local bound3_mt = {}
+---@class bound3
+local bound3_mt   = {}
+---@class bound3
+local bound3      = {}
 bound3_mt.__index = bound3_mt
 
 local function new(min, max)
@@ -78,7 +78,7 @@ function bound3_mt:contain(b)
 
       if ay1 <= by1 and ay2 >= by2 and ax1 <= bx1 and ax2 >= bx2 then
             return true
-       end
+      end
 end
 
 --- center
@@ -95,6 +95,8 @@ function bound3_mt.__tostring(self)
       return ("%s, %s"):format(tostring(self.min), tostring(self.max))
 end
 
-return setmetatable(bound3, { __call = function(_, min, max)
-	return new(min, max)
-end })
+return setmetatable(bound3, {
+      __call = function(_, min, max)
+            return new(min, max)
+      end
+})

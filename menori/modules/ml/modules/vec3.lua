@@ -10,14 +10,14 @@
 Vector3.
 menori.ml.vec3
 ]]
--- @classmod vec3
--- @alias vec3_mt
 
 local modules = (...):gsub('%.[^%.]+$', '') .. "."
 local utils = require(modules .. "utils")
 
-local vec3 = {}
+---@class vec3
 local vec3_mt = {}
+---@cas vec3
+local vec3 = {}
 vec3_mt.__index = vec3_mt
 
 local function new(x, y, z)
@@ -297,7 +297,7 @@ end
 --- notEqual
 -- @static
 function vec3.notEqual(a, b)
-	return { a.x ~= b.x, a.y ~= b.y, a.z ~= b.z  }
+	return { a.x ~= b.x, a.y ~= b.y, a.z ~= b.z }
 end
 
 --- lessThan
@@ -334,10 +334,12 @@ function vec3.pow(a, b)
 	)
 end
 
-return setmetatable(vec3, { __call = function(_, x, y, z)
-	if type(x) == 'table' then
-		local xx, yy, zz = x.x or x[1], x.y or x[2], x.z or x[3]
-		return new(xx, yy, zz)
+return setmetatable(vec3, {
+	__call = function(_, x, y, z)
+		if type(x) == 'table' then
+			local xx, yy, zz = x.x or x[1], x.y or x[2], x.z or x[3]
+			return new(xx, yy, zz)
+		end
+		return new(x, y, z)
 	end
-	return new(x, y, z)
-end })
+})

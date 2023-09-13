@@ -13,16 +13,17 @@ Camera for 2D scenes.
 
 local modules = (...):match('(.*%menori.modules.)')
 
-local app   = require (modules .. 'app')
-local class = require (modules .. 'libs.class')
-local ml    = require (modules .. 'ml')
+local app     = require(modules .. 'app')
+local class   = require(modules .. 'libs.class')
+local ml      = require(modules .. 'ml')
 
-local mat4 = ml.mat4
-local vec3 = ml.vec3
-local vec2 = ml.vec2
-local quat = ml.quat
+local mat4    = ml.mat4
+local vec3    = ml.vec3
+local vec2    = ml.vec2
+local quat    = ml.quat
 
-local camera = class('Camera')
+---@class Camera: Class
+local camera  = class('Camera')
 
 --- The public constructor.
 function camera:init()
@@ -79,10 +80,10 @@ function camera:_apply_transform()
 
             local rox = dw * self.sx
             local roy = dh * self.sy
-            local ox = (self.bound_w-rox) * (0.5 - self.px)
-            local oy = (self.bound_h-roy) * (0.5 - self.py)
+            local ox = (self.bound_w - rox) * (0.5 - self.px)
+            local oy = (self.bound_h - roy) * (0.5 - self.py)
 
-            self._p:set(-self.x+ox, -self.y+oy, 0)
+            self._p:set(-self.x + ox, -self.y + oy, 0)
             self._s:set(sx, sy, 1)
 
             --self.matrix:compose(self._p, self._q, self._s)
@@ -99,7 +100,6 @@ function camera:_apply_transform()
       --love.graphics.applyTransform(love.math.newTransform(-self.x, -self.y, self.angle, sx, sy, self.ox, self.oy))
       love.graphics.applyTransform(self.matrix:to_temp_transform_object())
 end
-
 
 --- Get viewport.
 ---@return number x
@@ -157,14 +157,14 @@ function camera:get_position()
 end
 
 function camera:get_bound()
-      return self.bound_w , self.bound_h
+      return self.bound_w, self.bound_h
 end
 
 --- Set camera bounding box.
 ---@param w number bounding box width.
 ---@param h number bounding box height.
----@param pvx number normalized center x inside bounding box.
----@param pvy number normalized center y inside bounding box.
+-- @param pvx number normalized center x inside bounding box.
+-- @param pvy number normalized center y inside bounding box.
 function camera:set_bounding_box(w, h, pvx, pvy)
       self.bound_w = w
       self.bound_h = h
