@@ -14,6 +14,7 @@ local vec3 = ml.vec3
 local quat = ml.quat
 
 ---@class MinimalScene: Scene
+---@field super Scene
 local scene = menori.Scene:extend('minimal_scene')
 
 function scene:init()

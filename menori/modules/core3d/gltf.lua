@@ -10,7 +10,6 @@
 Module for load the *gltf format.
 Separated GLTF (.gltf+.bin+textures) or (.gltf+textures) is supported now.
 ]]
--- @module glTFLoader
 
 local json = require 'libs.rxijson.json'
 
@@ -23,6 +22,7 @@ local function getFFIPointer(data)
 	if data.getFFIPointer then return data:getFFIPointer() else return data:getPointer() end
 end
 
+---@class glTFLoader
 local glTFLoader = {}
 local buffers, data
 
@@ -117,24 +117,26 @@ local function get_primitive_modes_constants(mode)
 	return 'triangles'
 end
 
+---@param component_type integer
+---@return string?
 local function get_unpack_type(component_type)
 	if
-	component_type == 5120 then
+		component_type == 5120 then
 		return 'b'
 	elseif
-	component_type == 5121 then
+		component_type == 5121 then
 		return 'B'
 	elseif
-	component_type == 5122 then
+		component_type == 5122 then
 		return 'h'
 	elseif
-	component_type == 5123 then
+		component_type == 5123 then
 		return 'H'
 	elseif
-	component_type == 5125 then
+		component_type == 5125 then
 		return 'I4'
 	elseif
-	component_type == 5126 then
+		component_type == 5126 then
 		return 'f'
 	end
 end
@@ -211,6 +213,7 @@ local function get_indices_content(v)
 
 		for i = 0, buffer.count - 1 do
 			local pos = buffer.offset + i * element_size + 1
+			---@type number
 			local value = love.data.unpack(unpack_type, data_string, pos)
 			temp_data[i + 1] = value + 1
 			if value > max then max = value end
@@ -218,7 +221,7 @@ local function get_indices_content(v)
 		end
 
 		for i = 0, buffer.count - 1 do
-			temp_data[i+1] = temp_data[i+1] - min
+			temp_data[i + 1] = temp_data[i + 1] - min
 		end
 	end
 	return temp_data, element_size, min, max
@@ -296,7 +299,7 @@ local function init_mesh(mesh)
 			end
 
 			local buffer = get_buffer(v)
-			attribute_buffers[#attribute_buffers+1] = buffer
+			attribute_buffers[#attribute_buffers + 1] = buffer
 
 			if max == 0 then max = buffer.count end
 			if ffi then
@@ -351,7 +354,7 @@ local function create_material(textures, material)
 
 	local main_texture
 	local pbr = material.pbrMetallicRoughness
-	uniforms.baseColor = (pbr and pbr.baseColorFactor) or {1, 1, 1, 1}
+	uniforms.baseColor = (pbr and pbr.baseColorFactor) or { 1, 1, 1, 1 }
 	if pbr then
 		local _pbrBaseColorTexture = pbr.baseColorTexture
 		local _pbrMetallicRoughnessTexture = pbr.metallicRoughnessTexture
@@ -390,7 +393,7 @@ local function create_material(textures, material)
 		uniforms.emissiveTexture = emissiveTexture.source
 		uniforms.occlusionTextureCoord = emissiveTexture.tcoord
 	end
-	uniforms.emissiveFactor = material.emissiveFactor or {0, 0, 0}
+	uniforms.emissiveFactor = material.emissiveFactor or { 0, 0, 0 }
 	uniforms.opaque = material.alphaMode == 'OPAQUE' or not material.alphaMode
 	if material.alphaMode == 'MASK' then
 		uniforms.alphaCutoff = material.alphaCutoff or 0.5
@@ -409,10 +412,10 @@ end
 
 local function parse_filter(value)
 	if
-	value == 9728 then
+		value == 9728 then
 		return 'nearest'
 	elseif
-	value == 9729 then
+		value == 9729 then
 		return 'linear'
 	else
 		return 'linear'
@@ -421,13 +424,13 @@ end
 
 local function parse_wrap(value)
 	if
-	value == 33071 then
+		value == 33071 then
 		return 'clamp'
 	elseif
-	value == 33648 then
+		value == 33648 then
 		return 'mirroredrepeat'
 	elseif
-	value == 10497 then
+		value == 10497 then
 		return 'repeat'
 	else
 		return 'clamp'
@@ -443,7 +446,7 @@ local function get_data_array(buffer)
 			if buffer.type_elements_count > 1 then
 				local vector = {}
 				for j = 1, buffer.type_elements_count do
-					local value = ptr[j-1]
+					local value = ptr[j - 1]
 					table.insert(vector, value)
 				end
 				table.insert(array, vector)
@@ -524,7 +527,7 @@ end
 
 local function unpack_data(format, data, iterator)
 	local pos = iterator.position
-	iterator.position	= iterator.position + love.data.getPackedSize(format)
+	iterator.position = iterator.position + love.data.getPackedSize(format)
 	return love.data.unpack(format, data, pos + 1)
 end
 
@@ -546,11 +549,11 @@ local function glb_parser(glb_data)
 		local chunk_length, chunk_type = unpack_data('<I4I4', glb_data, iterator)
 		local start_position = iterator.position
 		if
-		chunk_type == 0x4E4F534A then
+			chunk_type == 0x4E4F534A then
 			local data_view = love.data.newDataView(glb_data, iterator.position, chunk_length)
 			json_data = json.decode(data_view:getString())
 		elseif
-		chunk_type == 0x004E4942 then
+			chunk_type == 0x004E4942 then
 			local data_view = love.data.newDataView(glb_data, iterator.position, chunk_length)
 			buffers[bufferi] = data_view
 			bufferi = bufferi + 1
@@ -562,11 +565,22 @@ local function glb_parser(glb_data)
 	return json_data, buffers
 end
 
+---@class glTF
+---@field asset any
+---@field nodes any
+---@field scene any
+---@field materials any
+---@field meshes any
+---@field scenes any
+---@field images any
+---@field animations any
+---@field skins any
+
 --- Load gltf model by filename.
 -- @function load
 ---@param filename string The filepath to the gltf file (GLTF must be separated (.gltf+.bin+textures) or (.gltf+textures)
----@param[opt=love.filesystem.read] function io_read Callback to read the file.
----@return table
+-- @param[opt=love.filesystem.read] function io_read Callback to read the file.
+---@return glTF
 function glTFLoader.load(filename)
 	local path = filename:match(".+/")
 	local name, extension = filename:match("([^/]+)%.(.+)$")

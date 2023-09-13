@@ -13,14 +13,14 @@ Module for building scene nodes from a loaded gltf format.
 
 local modules = (...):match('(.*%menori.modules.)')
 
-local Node = require (modules .. '.node')
-local ModelNode = require (modules .. 'core3d.model_node')
-local Mesh = require (modules .. 'core3d.mesh')
-local Material = require (modules .. 'core3d.material')
+local Node = require(modules .. '.node')
+local ModelNode = require(modules .. 'core3d.model_node')
+local Mesh = require(modules .. 'core3d.mesh')
+local Material = require(modules .. 'core3d.material')
 
-local ShaderUtils = require (modules .. 'shaders.utils')
+local ShaderUtils = require(modules .. 'shaders.utils')
 
-local ml = require (modules .. 'ml')
+local ml = require(modules .. 'ml')
 local mat4 = ml.mat4
 local vec3 = ml.vec3
 local quat = ml.quat
@@ -38,9 +38,9 @@ local function create_nodes(builder, nodes, i)
       local r = quat(0, 0, 0, 1)
       local s = vec3(1)
       if v.translation or v.rotation or v.scale then
-            t:set(v.translation or {0, 0, 0})
-            r:set(v.rotation or {0, 0, 0, 1})
-            s:set(v.scale or {1, 1, 1})
+            t:set(v.translation or { 0, 0, 0 })
+            r:set(v.rotation or { 0, 0, 0, 1 })
+            s:set(v.scale or { 1, 1, 1 })
       elseif v.matrix then
             mat4(v.matrix):decompose(t, r, s)
       end
@@ -98,7 +98,7 @@ end
 
 
 --- Creates a node tree.
----@param gltf table Data obtained with glTFLoader.load
+---@param gltf glTF Data obtained with glTFLoader.load
 ---@param callback function? Callback Called for each built scene with params (scene, builder).
 ---@return table An array of scenes, where each scene is a menori.Node object
 function NodeTreeBuilder.create(gltf, callback)
@@ -134,7 +134,7 @@ function NodeTreeBuilder.create(gltf, callback)
             local node = create_nodes(builder, gltf.nodes, node_index)
             local skin = gltf.nodes[node_index].skin
             if skin then
-                  skin = gltf.skins[skin+1]
+                  skin = gltf.skins[skin + 1]
                   node.joints = {}
                   if skin.skeleton then
                         node.skeleton_node = create_nodes(builder, gltf.nodes, skin.skeleton + 1)
