@@ -1,10 +1,14 @@
+if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
+	require("lldebugger").start()
+end
+
 local menori = require 'menori'
 
 local scene_iterator = 1
 local example_list = {
-	{ title = "minimal", path = "examples.minimal.scene" },
+	{ title = "minimal",        path = "examples.minimal.scene" },
 	{ title = "basic_lighting", path = "examples.basic_lighting.scene" },
-	{ title = "SSAO", path = "examples.SSAO.scene" },
+	{ title = "SSAO",           path = "examples.SSAO.scene" },
 }
 for _, v in ipairs(example_list) do
 	local Scene = require(v.path)
@@ -24,8 +28,8 @@ function love.draw()
 	local prev_str = "Prev scene (press A)"
 	local next_str = "Next scene (press D)"
 	love.graphics.print("Example: " .. example_list[scene_iterator].title, 10, 25)
-	love.graphics.print(prev_str, 10, h-30)
-	love.graphics.print(next_str, w - font:getWidth(next_str) - 10, h-30)
+	love.graphics.print(prev_str, 10, h - 30)
+	love.graphics.print(next_str, w - font:getWidth(next_str) - 10, h - 30)
 end
 
 function love.update(dt)
@@ -44,6 +48,7 @@ end
 function love.wheelmoved(...)
 	menori.app:handle_event('wheelmoved', ...)
 end
+
 function love.keyreleased(key, ...)
 	if key == 'a' then
 		scene_iterator = scene_iterator - 1
@@ -57,9 +62,11 @@ function love.keyreleased(key, ...)
 	end
 	menori.app:handle_event('keyreleased', key, ...)
 end
+
 function love.keypressed(...)
 	menori.app:handle_event('keypressed', ...)
 end
+
 function love.mousemoved(...)
 	menori.app:handle_event('mousemoved', ...)
 end
