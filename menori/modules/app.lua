@@ -10,18 +10,23 @@
 Singleton object.
 The main class for managing scenes and the viewport.
 ]]
---- @classmod App
 
 local modules = (...):match('(.*%menori.modules.)')
 
 local lovg = love.graphics
+
+---@class App
 local app_mt = {}
 app_mt.__index = app_mt
 
 local graphics_w, graphics_h = love.graphics.getDimensions()
 
+---@as App
 local app = {
-      ox = 0, oy = 0, sx = 1, sy = 1,
+      ox = 0,
+      oy = 0,
+      sx = 1,
+      sy = 1,
       scenes = {},
       accumulator = 0,
       tick_period = 1.0 / 60.0,
@@ -47,6 +52,7 @@ end
 function app_mt:get_viewport_w()
       return self.w or graphics_w
 end
+
 --- Get viewport height.
 -- @treturn number
 function app_mt:get_viewport_h()
@@ -66,7 +72,6 @@ end
 function app_mt:set_scene(name)
       self.current_scene = self.scenes[name]
 end
-
 
 --- Main update function.
 -- @tparam number dt
@@ -101,7 +106,6 @@ function app_mt:render()
             self.current_scene:render()
       end
 end
-
 
 --- Handling any LOVE event. Redirects an event call to an overridden function in the active scene.
 -- @tparam string eventname
