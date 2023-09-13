@@ -7,7 +7,7 @@
 --]]
 
 local modules = (...):match('(.*%menori.modules.)')
-local utils = require (modules .. 'libs.utils')
+local utils = require(modules .. 'libs.utils')
 local new_class
 
 local function extend(self, _class_name, attr)
@@ -15,7 +15,7 @@ local function extend(self, _class_name, attr)
 end
 
 local function implement(self, ...)
-	for _, class in pairs({...}) do
+	for _, class in pairs({ ... }) do
 		for k, v in pairs(class) do
 			if self[k] == nil and type(v) == "function" then
 				self[k] = v
@@ -30,12 +30,13 @@ new_class = function(class_name, attr, base_class)
 			return string.format('%p instance of "%s"', self, self.class_name)
 		end,
 	}
+	---@class Class
 	local class = {
-            super = base_class,
-            class_name = class_name,
-            extend = extend,
+		super = base_class,
+		class_name = class_name,
+		extend = extend,
 		implement = implement,
-      }
+	}
 	if attr then
 		for k, v in pairs(attr) do
 			if class[k] == nil then class[k] = utils.copy(v) end
@@ -50,9 +51,9 @@ new_class = function(class_name, attr, base_class)
 		end
 	end
 	__mt.__index = class
-      return setmetatable(class, {
+	return setmetatable(class, {
 		__index = base_class,
-		__call = function (self, ...)
+		__call = function(self, ...)
 			local t = setmetatable({}, __mt)
 			if self.init then self.init(t, ...) end
 			return t

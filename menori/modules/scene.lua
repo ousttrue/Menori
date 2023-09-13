@@ -11,10 +11,10 @@ Base class of scenes.
 It contains methods for recursively drawing and updating nodes.
 You need to inherit from the Scene class to create your own scene object.
 ]]
---- @classmod Scene
 
 local modules = (...):match('(.*%menori.modules.)')
-local class = require (modules .. 'libs.class')
+---@type (fun(name: string): Class)
+local class = require(modules .. 'libs.class')
 
 local lovg = love.graphics
 local temp_environment
@@ -25,7 +25,7 @@ local function layer_comp(a, b)
       return a.layer < b.layer
 end
 
-local priorities = {OPAQUE = 0, MASK = 1, BLEND = 2}
+local priorities = { OPAQUE = 0, MASK = 1, BLEND = 2 }
 local function alpha_mode_comp(a, b)
       return priorities[a.material.alpha_mode] < priorities[b.material.alpha_mode]
 end
@@ -34,6 +34,9 @@ local function default_filter(node, scene, environment)
       node:render(scene, environment)
 end
 
+---@class Scene: Class
+---@field interpolation_dt number
+---@field dt number
 local scene = class('Scene')
 
 scene.alpha_mode_comp = alpha_mode_comp
@@ -142,11 +145,12 @@ function scene:_recursive_update_nodes(node)
 end
 
 function scene:render()
-      
+
 end
 
-function scene:update()
-      
+---@param dt number
+function scene:update(dt)
+
 end
 
 return scene

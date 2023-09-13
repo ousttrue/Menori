@@ -21,12 +21,15 @@ app_mt.__index = app_mt
 
 local graphics_w, graphics_h = love.graphics.getDimensions()
 
----@as App
+---@class App
+---@field w integer
+---@field h integer
 local app = {
       ox = 0,
       oy = 0,
       sx = 1,
       sy = 1,
+      ---@type Scene[]
       scenes = {},
       accumulator = 0,
       tick_period = 1.0 / 60.0,
