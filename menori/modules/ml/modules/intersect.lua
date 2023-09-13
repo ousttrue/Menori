@@ -24,10 +24,10 @@ intersect.__index = intersect
 
 ---
 -- See [cpml](https://github.com/excessive/cpml/blob/cf707cb6af59c8be13918ea4ac9478eba9e8a7a0/modules/intersect.lua#L101).
--- @tparam table ray
+---@param ray table
 -- ray.position  is a vec3;
 -- ray.direction is a vec3.
--- @tparam table triangle
+---@param triangle table
 -- triangle[1]   is a vec3 or array;
 -- triangle[2]   is a vec3 or array;
 -- triangle[3]   is a vec3 or array.

@@ -91,8 +91,8 @@ end
 
 --- Generate indices for quadrilateral primitives.
 -- @static
--- @tparam number count Count of vertices
--- @tparam table template Template list that is used to generate indices in a specific sequence
+---@param count number Count of vertices
+---@param template table Template list that is used to generate indices in a specific sequence
 function Mesh.generate_indices(count, template)
       template = template or default_template
       local indices = {}
@@ -111,8 +111,8 @@ end
 
 --- Get the attribute index from the vertex format.
 -- @static
--- @tparam string attribute The attribute to be found.
--- @tparam table format Vertex format table.
+---@param attribute string The attribute to be found.
+---@param format table Vertex format table.
 function Mesh.get_attribute_index(attribute, format)
       for i, v in ipairs(format) do
             if v[1] == attribute then
@@ -123,8 +123,8 @@ end
 
 --- Create a menori.Mesh from vertices.
 -- @static
--- @tparam table vertices that contains vertex data. See [LOVE Mesh](https://love2d.org/wiki/love.graphics.newMesh)
--- @tparam[opt] table opt that containing {mode=, vertexformat=, indices=, texture=}
+---@param vertices table that contains vertex data. See [LOVE Mesh](https://love2d.org/wiki/love.graphics.newMesh)
+---@param opt table? that containing {mode=, vertexformat=, indices=, texture=}
 function Mesh.from_primitive(vertices, opt)
       return Mesh {
             mode = opt.mode,
@@ -136,8 +136,8 @@ function Mesh.from_primitive(vertices, opt)
 end
 
 --- The public constructor.
--- @tparam table primitives List of primitives
--- @tparam[opt] Image texture
+---@param primitives table List of primitives
+---@param texture Image?
 function Mesh:init(primitive, texture)
       local mesh = create_mesh_from_primitive(primitive, texture)
       self.vertex_attribute_index = Mesh.get_attribute_index('VertexPosition', mesh:getVertexFormat())
@@ -147,7 +147,7 @@ function Mesh:init(primitive, texture)
 end
 
 --- Draw a Mesh object on the screen.
--- @tparam menori.Material material The Material to be used when drawing the mesh.
+---@param material menori.Material The Material to be used when drawing the mesh.
 function Mesh:draw(material)
       material:send_to(material.shader)
 
@@ -213,14 +213,14 @@ function Mesh:get_triangles_transform(matrix)
 end
 
 --- Create a cached array of triangles from the mesh vertices and return it.
--- @treturn table Triangles { {{x, y, z}, {x, y, z}, {x, y, z}}, ...}
+---@return table Triangles { {{x, y, z}, {x, y, z}, {x, y, z}}, ...}
 function Mesh:get_triangles()
       return self:get_triangles_transform(mat4())
 end
 
 --- Get an array of all mesh vertices.
--- @tparam[opt=1] int iprimitive The index of the primitive.
--- @treturn table The table in the form of {vertex, ...} where each vertex is a table in the form of {attributecomponent, ...}.
+---@param[opt=1] int iprimitive The index of the primitive.
+---@return table The table in the form of {vertex, ...} where each vertex is a table in the form of {attributecomponent, ...}.
 function Mesh:get_vertices(start, count)
       local mesh = self.lg_mesh
       start = start or 1
@@ -252,14 +252,14 @@ function Mesh:get_vertex_map()
 end
 
 --- Get an array of all mesh vertices.
--- @tparam table vertices The table in the form of {vertex, ...} where each vertex is a table in the form of {attributecomponent, ...}.
--- @tparam number startvertex The vertex from which the insertion will start.
+---@param vertices table The table in the form of {vertex, ...} where each vertex is a table in the form of {attributecomponent, ...}.
+---@param startvertex number The vertex from which the insertion will start.
 function Mesh:set_vertices(vertices, startvertex)
       self.lg_mesh:setVertices(vertices, startvertex)
 end
 
 --- Apply the transformation matrix to the mesh vertices.
--- @tparam ml.mat4 matrix
+---@param matrix ml.mat4
 function Mesh:apply_matrix(matrix)
       local temp_v3 = vec3(0, 0, 0)
 

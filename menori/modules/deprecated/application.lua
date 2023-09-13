@@ -32,9 +32,9 @@ function application:init()
 end
 
 --- Resize viewport.
--- @tparam number w Virtual viewport width
--- @tparam number h Virtual viewport height
--- @tparam[opt] table opt canvas format, filter and msaa. {format=, msaa=, filter=}
+---@param w number Virtual viewport width
+---@param h number Virtual viewport height
+---@param opt table? canvas format, filter and msaa. {format=, msaa=, filter=}
 function application:resize_viewport(w, h, opt)
 	opt = opt or {}
 	self.resizable = (w == nil or h == nil)
@@ -55,10 +55,10 @@ function application:resize_viewport(w, h, opt)
 end
 
 --- Get viewport dimensions.
--- @treturn number x
--- @treturn number y
--- @treturn number w
--- @treturn number h
+---@return number x
+---@return number y
+---@return number w
+---@return number h
 function application:get_viewport()
 	return self.x, self.y, self.w, self.h
 end
@@ -87,7 +87,7 @@ function application:_update_viewport_position()
 end
 
 --- Change scene with a transition effect.
--- @tparam string name
+---@param name string
 function application:switch_scene(name, effect)
 	self.next_scene = list[name]
 	assert(effect)
@@ -96,20 +96,20 @@ function application:switch_scene(name, effect)
 end
 
 --- Add scene to the scene list.
--- @tparam string name
+---@param name string
 function application:add_scene(name, scene_object)
 	list[name] = scene_object
 end
 
 --- Get scene from the scene list by the name.
--- @tparam string name
+---@param name string
 -- @return Scene object
 function application:get_scene(name)
 	return list[name]
 end
 
 --- Set current scene by the name.
--- @tparam string name
+---@param name string
 function application:set_scene(name)
 	self:_change_scene(list[name])
 end
@@ -131,7 +131,7 @@ function application:get_current_scene()
 end
 
 --- Main update function.
--- @tparam number dt
+---@param dt number
 function application:update(dt)
 	local update_count = 0
 	accumulator = accumulator + dt
@@ -148,7 +148,7 @@ function application:update(dt)
 end
 
 --- Main render function.
--- @tparam number dt
+---@param dt number
 function application:render(dt)
 	lovg.setCanvas({ self.canvas, depth = true })
 	lovg.clear()

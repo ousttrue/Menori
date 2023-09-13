@@ -25,7 +25,7 @@ local glTFAnimation = class('glTFAnimations')
 
 ----
 -- The public constructor.
--- @tparam table animations Animations loaded with the glTFLoader
+---@param animations table Animations loaded with the glTFLoader
 function glTFAnimation:init(animations)
 	self.animations = animations
 	self.accumulator = 0
@@ -81,7 +81,7 @@ local target_path = {
 
 ----
 -- Set the action by name.
--- @tparam string name Action name
+---@param name string Action name
 function glTFAnimation:set_action_by_name(name)
 	for i, v in ipairs(self.animations) do
 		if v.name == name then
@@ -93,21 +93,21 @@ end
 
 ----
 -- Set the action by index.
--- @tparam number i Action index
+---@param i number Action index
 function glTFAnimation:set_action(i)
 	self.animation = self.animations[i]
 end
 
 ----
 -- Get the total number of actions.
--- @treturn number
+---@return number
 function glTFAnimation:get_action_count()
 	return #self.animations
 end
 
 ----
 -- Update animations.
--- @tparam number dt
+---@param dt number
 function glTFAnimation:update(dt)
 	if self.animation then
 		for _, channel in ipairs(self.animation.channels) do

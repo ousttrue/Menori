@@ -37,52 +37,52 @@ function UniformList:init()
 end
 
 --- Set one or more any type values into uniform list.
--- @tparam string name
--- @param ... See shader:send(name, ...)
+---@param name string
+-- @param See ... shader:send(name, ...)
 function UniformList:set(name, ...)
 	local uniform = locate_uniform(self.list, name, false, 1)
 	uniform.value = {...}
 end
 
 --- Set one or more color values into uniform list.
--- @tparam string name
--- @param ... See shader:sendColor(name, ...)
+---@param name string
+-- @param See ... shader:sendColor(name, ...)
 function UniformList:set_color(name, ...)
 	local uniform = locate_uniform(self.list, name, false, 2)
 	uniform.value = {...}
 end
 
 --- Set matrix object into uniform list.
--- @tparam string name
--- @tparam ml.mat4 object Matrix of the menori.ml
+---@param name string
+---@param object ml.mat4 Matrix of the menori.ml
 function UniformList:set_matrix(name, object)
 	local uniform = locate_uniform(self.list, name, false, 3)
 	uniform.value = object
 end
 
 --- Set vector object into uniform list.
--- @tparam string name
--- @tparam ml.vec object Vector of the menori.ml.
+---@param name string
+---@param object ml.vec Vector of the menori.ml.
 function UniformList:set_vector(name, object)
 	local uniform = locate_uniform(self.list, name, false, 4)
 	uniform.value = object
 end
 
 --- Get Uniform variable from list.
--- @tparam string name
--- @treturn table {[constant]=boolean,[type]=number,[value]=table}
+---@param name string
+---@return table {[constant]=boolean,[type]=number,[value]=table}
 function UniformList:get(name)
 	return self.list[name]
 end
 
 --- Remove Uniform variable from list.
--- @tparam string name
+---@param name string
 function UniformList:remove(name)
 	self.list[name] = nil
 end
 
 --- Send all Uniform values from the list to the Shader.
--- @param shader [LOVE Shader](https://love2d.org/wiki/Shader)
+-- @param [LOVE shader Shader](https://love2d.org/wiki/Shader)
 -- @param[opt=''] concat_str A string to be added before each Uniform name.
 function UniformList:send_to(shader, concat_str)
 	concat_str = concat_str or ''

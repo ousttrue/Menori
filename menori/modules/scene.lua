@@ -48,10 +48,10 @@ function scene:init()
 end
 
 --- Recursive node render function.
--- @tparam menori.Node node
--- @tparam menori.Environment environment
--- @tparam[opt] table renderstates
--- @tparam[opt] function filter The callback function.
+---@param node Node
+---@param environment Environment
+---@param renderstates table?
+---@param filter function? The callback function.
 -- @usage renderstates = { canvas, ..., clear = true, colors = {color, ...} }
 -- @usage function default_filter(node, scene, environment) node:render(scene, environment) end
 function scene:render_nodes(node, environment, renderstates, filter)
@@ -114,8 +114,8 @@ function scene:_recursive_render_nodes(node, transform_flag)
 end
 
 --- Recursive node update function.
--- @tparam Node node
--- @tparam Environment environment
+---@param node Node
+---@param environment Environment
 function scene:update_nodes(node, environment)
       assert(node, "in function 'scene:update_nodes' node does not exist.")
       temp_environment = environment

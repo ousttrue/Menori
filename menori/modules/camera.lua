@@ -51,8 +51,8 @@ function camera:init()
 end
 
 --- Set camera pivot.
--- @tparam number nx normalized x
--- @tparam number ny normalized y
+---@param nx number normalized x
+---@param ny number normalized y
 function camera:set_pivot(nx, ny)
       local _, _, viewport_w, viewport_h = self:get_viewport()
       nx = nx or 0.5
@@ -102,10 +102,10 @@ end
 
 
 --- Get viewport.
--- @treturn number x
--- @treturn number y
--- @treturn number w
--- @treturn number h
+---@return number x
+---@return number y
+---@return number w
+---@return number h
 function camera:get_viewport()
       local _, _, w, h = app:get_viewport()
       local x, y = self:get_position()
@@ -113,8 +113,8 @@ function camera:get_viewport()
 end
 
 --- Move camera.
--- @tparam number dx delta x
--- @tparam number dy delta y
+---@param dx number delta x
+---@param dy number delta y
 function camera:move(dx, dy)
       self._update = true
       self.x = self.x + (dx or 0)
@@ -122,15 +122,15 @@ function camera:move(dx, dy)
 end
 
 --- Rotate camera.
--- @tparam number angle in radians
+---@param angle number in radians
 function camera:rotate(angle)
       self._update = true
       self.angle = angle
 end
 
 --- Scale camera.
--- @tparam number sx scale factor x
--- @tparam number sy scale factor y
+---@param sx number scale factor x
+---@param sy number scale factor y
 function camera:scale(sx, sy)
       self._update = true
       sx = sx or 1
@@ -139,8 +139,8 @@ function camera:scale(sx, sy)
 end
 
 --- Set camera position.
--- @tparam number x
--- @tparam number y
+---@param x number
+---@param y number
 function camera:set_position(x, y)
       self._update = true
       self.x = x or self.x
@@ -150,8 +150,8 @@ function camera:set_position(x, y)
 end
 
 --- Get camera position.
--- @treturn number self.x - self.ox
--- @treturn number self.y - self.oy
+---@return number self.x - self.ox
+---@return number self.y - self.oy
 function camera:get_position()
       return self.x - self.ox, self.y - self.oy
 end
@@ -161,10 +161,10 @@ function camera:get_bound()
 end
 
 --- Set camera bounding box.
--- @tparam number w bounding box width.
--- @tparam number h bounding box height.
--- @tparam number pvx normalized center x inside bounding box.
--- @tparam number pvy normalized center y inside bounding box.
+---@param w number bounding box width.
+---@param h number bounding box height.
+---@param pvx number normalized center x inside bounding box.
+---@param pvy number normalized center y inside bounding box.
 function camera:set_bounding_box(w, h, pvx, pvy)
       self.bound_w = w
       self.bound_h = h

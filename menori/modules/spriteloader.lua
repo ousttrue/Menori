@@ -74,12 +74,12 @@ local function load_aseprite_sprite_sheet(filename)
 end
 
 --- Create a tileset from an image.
--- @param image [Image](https://love2d.org/wiki/Image)
--- @tparam number offsetx Offset from beginnig of image by x.
--- @tparam number offsety Offset from beginnig of image by y.
--- @tparam number w Tile width.
--- @tparam number h Tile height.
--- @treturn table Array of [Quad](https://love2d.org/wiki/Quad) objects
+-- @param [Image](https://love2d.org/wiki/Image) image
+---@param offsetx number Offset from beginnig of image by x.
+---@param offsety number Offset from beginnig of image by y.
+---@param w number Tile width.
+---@param h number Tile height.
+---@return table Array of [Quad](https://love2d.org/wiki/Quad) objects
 function SpriteLoader.create_tileset_from_image(image, offsetx, offsety, w, h)
       local image_w, image_h = image:getDimensions()
       local quads = {}
@@ -96,35 +96,35 @@ function SpriteLoader.create_tileset_from_image(image, offsetx, offsety, w, h)
 end
 
 --- Create sprite from image.
--- @param image [Image](https://love2d.org/wiki/Image)
--- @treturn menori.Sprite object
+-- @param [Image](https://love2d.org/wiki/Image) image
+---@return menori.Sprite object
 function SpriteLoader.from_image(image)
       local w, h = image:getDimensions()
       return Sprite({love.graphics.newQuad(0, 0, w, h, w, h)}, image)
 end
 
 --- Create sprite from tileset image.
--- @param image [Image](https://love2d.org/wiki/Image)
--- @tparam number offsetx
--- @tparam number offsety
--- @tparam number w
--- @tparam number h
--- @treturn menori.Sprite object
+-- @param [Image](https://love2d.org/wiki/Image) image
+---@param offsetx number
+---@param offsety number
+---@param w number
+---@param h number
+---@return menori.Sprite object
 function SpriteLoader.from_tileset_image(image, offsetx, offsety, w, h)
       return Sprite(SpriteLoader.create_tileset_from_image(image, offsetx, offsety, w, h), image)
 end
 
 --- Load sprite from aseprite spritesheet using sprite cache list.
--- @tparam string filename
--- @treturn menori.Sprite object
+---@param filename string
+---@return menori.Sprite object
 function SpriteLoader.from_aseprite_sprite_sheet(filename)
       if not list[filename] then list[filename] = load_aseprite_sprite_sheet(filename) end
       return list[filename]
 end
 
 --- Find aseprite spritesheet in cache list.
--- @tparam string name
--- @treturn menori.Sprite object
+---@param name string
+---@return menori.Sprite object
 function SpriteLoader.find_sprite_sheet(name)
       return list[name]
 end

@@ -25,10 +25,10 @@ local PerspectiveCamera = class('PerspectiveCamera')
 
 ----
 -- The public constructor.
--- @tparam number fov Field of view of the Camera, in degrees.
--- @tparam number aspect The aspect ratio.
--- @tparam number nclip The distance of the near clipping plane from the the Camera.
--- @tparam number fclip The distance of the far clipping plane from the Camera.
+---@param fov number Field of view of the Camera, in degrees.
+---@param aspect number The aspect ratio.
+---@param nclip number The distance of the near clipping plane from the the Camera.
+---@param fclip number The distance of the far clipping plane from the Camera.
 function PerspectiveCamera:init(fov, aspect, nclip, fclip)
 	fov = fov or 60
 	aspect = aspect or 1.6666667
@@ -53,10 +53,10 @@ end
 
 ----
 -- Get a ray going from camera through screen point.
--- @tparam number x screen position x
--- @tparam number y screen position y
--- @tparam table viewport (optional) viewport rectangle (x, y, w, h)
--- @treturn table that containing {position = vec3, direction = vec3}
+---@param x number screen position x
+---@param y number screen position y
+---@param viewport table (optional) viewport rectangle (x, y, w, h)
+---@return table that containing {position = vec3, direction = vec3}
 function PerspectiveCamera:screen_point_to_ray(x, y, viewport)
 	viewport = viewport or {app:get_viewport()}
 
@@ -70,11 +70,11 @@ end
 
 ----
 -- Transform position from world space into screen space.
--- @tparam number x
+---@param x number
 -- screen position x or vec3
--- @tparam number y screen position y
--- @tparam number z screen position z
--- @treturn vec2 object
+---@param y number screen position y
+---@param z number screen position z
+---@return vec2 object
 function PerspectiveCamera:world_to_screen_point(x, y, z)
 	if type(x) == 'table' then
 		x, y, z = x.x, x.y, x.z
@@ -105,7 +105,7 @@ end
 
 ----
 -- Get direction.
--- @treturn vec3 object
+---@return vec3 object
 function PerspectiveCamera:get_direction()
 	return (self.center - self.eye):normalize()
 end
@@ -114,24 +114,24 @@ return PerspectiveCamera
 
 ---
 -- Projection matrix.
--- @tfield mat4 m_projection
+---@field mat4 m_projection
 
 ---
 -- Inverse projection matrix.
--- @tfield mat4 m_inv_projection
+---@field mat4 m_inv_projection
 
 ---
 -- View matrix.
--- @tfield[readonly] mat4 m_view
+---@field[readonly] mat4 m_view
 
 ---
 -- Position where the camera is looking at.
--- @tfield vec3 center
+---@field vec3 center
 
 ---
 -- Position of the camera.
--- @tfield vec3 eye
+---@field vec3 eye
 
 ---
 -- Normalized up vector, how the camera is oriented.
--- @tfield vec3 up
+---@field vec3 up

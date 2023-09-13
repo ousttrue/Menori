@@ -53,8 +53,8 @@ else
 end
 
 --- The public constructor.
--- @tparam menori.Mesh mesh object
--- @tparam[opt=Material.default] menori.Material material object. (A new copy will be created for the material)
+---@param mesh menori.Mesh object
+---@param[opt=Material.default] menori.Material material object. (A new copy will be created for the material)
 function ModelNode:init(mesh, material)
 	ModelNode.super.init(self)
       material = material or Material.default
@@ -65,7 +65,7 @@ function ModelNode:init(mesh, material)
 end
 
 --- Clone an object.
--- @treturn menori.ModelNode object
+---@return menori.ModelNode object
 function ModelNode:clone()
       local t = ModelNode(self.mesh, self.material)
       ModelNode.super.clone(self, t)
@@ -73,8 +73,8 @@ function ModelNode:clone()
 end
 
 --- Calculate AABB by applying the current transformations.
--- @tparam[opt=1] number index The index of the primitive in the mesh.
--- @treturn menori.ml.bound3 object
+---@param[opt=1] number index The index of the primitive in the mesh.
+---@return menori.ml.bound3 object
 function ModelNode:calculate_aabb()
       local bound = self.mesh.bound
       local min = bound.min
@@ -113,8 +113,8 @@ end
 
 --- Draw a ModelNode object on the screen.
 -- This function will be called implicitly in the hierarchy when a node is drawn with scene:render_nodes()
--- @tparam menori.Scene scene object that is used when drawing the model
--- @tparam menori.Environment environment object that is used when drawing the model
+---@param scene menori.Scene object that is used when drawing the model
+---@param environment menori.Environment object that is used when drawing the model
 function ModelNode:render(scene, environment)
       local shader = self.material.shader
       environment:apply_shader(shader)

@@ -98,9 +98,9 @@ end
 
 
 --- Creates a node tree.
--- @tparam table gltf Data obtained with glTFLoader.load
--- @tparam[opt] function callback Callback Called for each built scene with params (scene, builder).
--- @treturn table An array of scenes, where each scene is a menori.Node object
+---@param gltf table Data obtained with glTFLoader.load
+---@param callback function? Callback Called for each built scene with params (scene, builder).
+---@return table An array of scenes, where each scene is a menori.Node object
 function NodeTreeBuilder.create(gltf, callback)
       local builder = {
             meshes = {},

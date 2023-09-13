@@ -25,7 +25,7 @@ local temp_int_view_m = ml.mat4()
 
 ----
 -- The public constructor.
--- @param camera Camera that will be associated with this environment.
+-- @param Camera camera that will be associated with this environment.
 function Environment:init(camera)
 	Environment.super.init(self)
 
@@ -37,8 +37,8 @@ end
 
 ----
 -- Add light source.
--- @tparam strign uniform_name Name of uniform used in the shader
--- @tparam menori.UniformList light Light source object
+---@param uniform_name strign Name of uniform used in the shader
+---@param light menori.UniformList Light source object
 function Environment:add_light(uniform_name, light)
 	local t = self.lights[uniform_name] or {}
 	self.lights[uniform_name] = t
@@ -49,7 +49,7 @@ end
 -- Send all the environment uniforms to the shader.
 -- This function can be used when creating your own display objects, or for shading technique.
 -- This method is called automatically when the environment is used in scene:render_nodes()
--- @param shader [LOVE Shader](https://love2d.org/wiki/Shader)
+-- @param [LOVE shader Shader](https://love2d.org/wiki/Shader)
 function Environment:send_uniforms_to(shader)
 	local camera = self.camera
 	self:send_to(shader)
@@ -74,7 +74,7 @@ end
 -- Set a Shader as current pixel effect or vertex shaders.
 -- All drawing operations until the next apply will be drawn using the Shader object specified.
 -- This method is called automatically when the environment is used in scene:render_nodes()
--- @param shader [LOVE Shader](https://love2d.org/wiki/Shader)
+-- @param [LOVE shader Shader](https://love2d.org/wiki/Shader)
 function Environment:apply_shader(shader)
 	--if self._shader_object_cache ~= shader then
 		love.graphics.setShader(shader)
@@ -88,7 +88,7 @@ end
 -- Send light sources uniforms to the shader.
 -- This function can be used when creating your own display objects, or for shading technique.
 -- This method is called automatically when the environment is used in scene:render_nodes()
--- @param shader [LOVE Shader](https://love2d.org/wiki/Shader)
+-- @param [LOVE shader Shader](https://love2d.org/wiki/Shader)
 function Environment:send_light_sources_to(shader)
 	for k, v in pairs(self.lights) do
 		utils.noexcept_send_uniform(shader, k .. '_count', #v)
@@ -106,8 +106,8 @@ return Environment
 
 ---
 -- UniformList object. Uniforms in the list are automatically sent to the shader, which will be used to display objects with this environment.
--- @tfield menori.UniformList uniform_list
+---@field menori.UniformList uniform_list
 
 ---
 -- List of light sources.
--- @tfield table lights
+---@field table lights

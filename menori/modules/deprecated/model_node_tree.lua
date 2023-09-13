@@ -44,7 +44,7 @@ local function set_transform(node, v)
 end
 
 --- The public constructor. Takes as arguments a list of nodes and scenes loaded with glTFLoader.
--- @tparam table gltf
+---@param gltf table
 -- @param shader
 function ModelNodeTree:init(gltf, callback)
       callback = callback or ModelNode
@@ -111,7 +111,7 @@ function ModelNodeTree:init(gltf, callback)
 end
 
 --- Set scene by name.
--- @tparam string name
+---@param name string
 function ModelNodeTree:set_scene_by_name(name)
       self:remove_childs()
       for _, v in ipairs(self.scenes) do

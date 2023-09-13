@@ -31,7 +31,7 @@ end
 
 ----
 -- The public constructor.
--- @tparam string name Name of the material.
+---@param name string Name of the material.
 -- @param[opt=Material.default_shader] shader [LOVE Shader](https://love2d.org/wiki/Shader)
 function Material:init(name, shader)
       Material.super.init(self)

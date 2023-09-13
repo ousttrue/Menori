@@ -564,9 +564,9 @@ end
 
 --- Load gltf model by filename.
 -- @function load
--- @tparam string filename The filepath to the gltf file (GLTF must be separated (.gltf+.bin+textures) or (.gltf+textures)
--- @tparam[opt=love.filesystem.read] function io_read Callback to read the file.
--- @treturn table
+---@param filename string The filepath to the gltf file (GLTF must be separated (.gltf+.bin+textures) or (.gltf+textures)
+---@param[opt=love.filesystem.read] function io_read Callback to read the file.
+---@return table
 function glTFLoader.load(filename)
 	local path = filename:match(".+/")
 	local name, extension = filename:match("([^/]+)%.(.+)$")

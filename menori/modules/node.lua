@@ -52,7 +52,7 @@ function Node:init(name)
 end
 
 --- Clone an object.
--- @treturn menori.Node object
+---@return menori.Node object
 function Node:clone(new_object)
       new_object = new_object or Node()
       new_object.parent = self.parent
@@ -78,35 +78,35 @@ function Node:clone(new_object)
 end
 
 --- Set Node local position.
--- @tparam number x
+---@param x number
 -- position x or vec3
--- @tparam number y position y
--- @tparam number z position z
+---@param y number position y
+---@param z number position z
 function Node:set_position(x, y, z)
       self._transform_flag = true
       self.position:set(x, y, z)
 end
 
 --- Set Node local rotation.
--- @tparam ml.quat q Rotation quaternion.
+---@param q ml.quat Rotation quaternion.
 function Node:set_rotation(q)
       self._transform_flag = true
       self.rotation = q
 end
 
 --- Set Node local scale.
--- @tparam number sx
+---@param sx number
 -- scale x or vec3
--- @tparam number sy scale y
--- @tparam number sz scale z
+---@param sy number scale y
+---@param sz number scale z
 function Node:set_scale(sx, sy, sz)
       self._transform_flag = true
       self.scale:set(sx, sy, sz)
 end
 
 --- Get world space position of the Node.
--- @tparam[opt] vec3 retvalue
--- @treturn vec3 object
+---@param retvalue vec3?
+---@return vec3 object
 function Node:get_world_position(retvalue)
       self:recursive_update_transform()
       local p = retvalue or vec3()
@@ -115,8 +115,8 @@ function Node:get_world_position(retvalue)
 end
 
 --- Get world space rotation of the Node.
--- @tparam[opt] quat retvalue
--- @treturn quat object
+---@param retvalue quat?
+---@return quat object
 function Node:get_world_rotation(retvalue)
       self:recursive_update_transform()
       local q = retvalue or quat()
@@ -125,7 +125,7 @@ function Node:get_world_rotation(retvalue)
 end
 
 --- The world space scale of the Node.
--- @tparam[opt] vec3 retvalue
+---@param retvalue vec3?
 -- @return vec3 object
 function Node:get_world_scale(retvalue)
       self:recursive_update_transform()
@@ -135,7 +135,7 @@ function Node:get_world_scale(retvalue)
 end
 
 --- The red axis of the transform in world space.
--- @tparam[opt] vec3 retvalue
+---@param retvalue vec3?
 -- @return vec3 object
 function Node:right(retvalue)
       self:recursive_update_transform()
@@ -143,7 +143,7 @@ function Node:right(retvalue)
 end
 
 --- The green axis of the transform in world space.
--- @tparam[opt] vec3 retvalue
+---@param retvalue vec3?
 -- @return vec3 object
 function Node:up(retvalue)
       self:recursive_update_transform()
@@ -151,8 +151,8 @@ function Node:up(retvalue)
 end
 
 --- The blue axis of the transform in world space.
--- @tparam[opt] vec3 retvalue
--- @treturn vec3 object
+---@param retvalue vec3?
+---@return vec3 object
 function Node:forward(retvalue)
       self:recursive_update_transform()
       return (retvalue or vec3()):set(self.world_matrix[3], self.world_matrix[7], self.world_matrix[11])
@@ -181,7 +181,7 @@ function Node:_recursive_get_aabb(t)
 end
 
 --- Calculate the largest AABB in down the hierarchy of nodes.
--- @treturn bound3 object
+---@return bound3 object
 function Node:get_aabb()
       return self:_recursive_get_aabb(bound3(
             vec3(math.huge), vec3(-math.huge)
@@ -189,7 +189,7 @@ function Node:get_aabb()
 end
 
 --- Update all transform up the hierarchy to the root node.
--- @tparam[opt] bool force Forced update transformations of all nodes up to the root node.
+---@param force bool? Forced update transformations of all nodes up to the root node.
 function Node:recursive_update_transform(force)
       if self.parent then self.parent:recursive_update_transform(self, force) end
       if force or self._transform_flag then
@@ -222,8 +222,8 @@ function Node:update_transform(parent_world_matrix)
 end
 
 --- Get child Node by index.
--- @tparam number index
--- @treturn menori.Node object
+---@param index number
+---@return menori.Node object
 function Node:get_child_by_index(index)
       assert(index <= #self.children and index > 0, 'child index out of range')
       return self.children[index]
@@ -238,8 +238,8 @@ function Node:remove_children()
 end
 
 --- Attach child node to this node.
--- @tparam menori.Node object
--- @treturn menori.Node object
+---@param object menori.Node
+---@return menori.Node object
 function Node:attach(...)
       for i, node in ipairs({...}) do
             self.children[#self.children + 1] = node
@@ -250,7 +250,7 @@ function Node:attach(...)
 end
 
 --- Detach child node.
--- @tparam menori.Node child
+---@param child menori.Node
 function Node:detach(child)
       for i, v in ipairs(self.children) do
             if v == child then
@@ -273,9 +273,9 @@ function find_child_by_name(children, t, i)
 end
 
 --- Find a child node by name.
--- @tparam string name If name contains a '/' character it will access
+---@param name string If name contains a '/' character it will access
 -- the Node in the hierarchy like a path name.
--- @treturn menori.Node The found child or nil
+---@return menori.Node The found child or nil
 function Node:find(name)
       local t = {}
       for v in name:gmatch("([^/]+)") do
@@ -285,7 +285,7 @@ function Node:find(name)
 end
 
 --- Recursively traverse all nodes.
--- @tparam function callback Function that is called for every child node with params (child, index)
+---@param callback function Function that is called for every child node with params (child, index)
 function Node:traverse(callback, _index)
       callback(self, _index or 1)
       local children = self.children
@@ -312,7 +312,7 @@ function Node:detach_from_parent()
 end
 
 --- Get the topmost Node in the hierarchy.
--- @tparam[opt] menori.Node upto the Node where the hierarchy recursion will stop if it exist
+---@param upto menori.Node? the Node where the hierarchy recursion will stop if it exist
 function Node:get_root_node(upto)
       if self.parent and self.parent ~= upto then
             return self.parent:get_root_node(upto)
@@ -376,12 +376,12 @@ return Node
 
 ---
 -- Local position.
--- @tfield[readonly] vec3 position
+---@field[readonly] vec3 position
 
 ---
 -- Local rotation.
--- @tfield[readonly] quat rotation
+---@field[readonly] quat rotation
 
 ---
 -- Local scale.
--- @tfield[readonly] vec3 scale
+---@field[readonly] vec3 scale
