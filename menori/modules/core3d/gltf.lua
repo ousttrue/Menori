@@ -80,7 +80,7 @@ end
 local glTFLoader = {}
 ---@type love.Data[]
 local buffers
----@type { [string]: any} json.decode result
+---@type Gltf
 local data
 
 local type_constants = {
@@ -351,7 +351,7 @@ local function get_vertices_content(attribute_buffers, components_stride, length
   return temp_data
 end
 
----@param mesh table
+---@param mesh GltfMesh
 ---@return LoaderMesh
 local function init_mesh(mesh)
   local primitives = {}
@@ -439,7 +439,7 @@ local function texture(textures, t)
 end
 
 ---@param textures LoaderTexture[]
----@param material table
+---@param material GltfMaterial
 ---@return LoaderMaterial
 local function create_material(textures, material)
   local uniforms = {}
@@ -547,6 +547,7 @@ local function get_data_array(buffer)
   return array
 end
 
+---@param animation GltfAnimation
 local function read_animation(animation)
   local samplers = {}
   for i, v in ipairs(animation.samplers) do
@@ -575,7 +576,7 @@ end
 ---@param io_read function
 ---@param path string
 ---@param images table[]
----@param texture table
+---@param texture GltfTexture
 ---@return LoaderTexture
 local function load_image(io_read, path, images, texture)
   local source = texture.source + 1
