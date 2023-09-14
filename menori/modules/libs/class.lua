@@ -10,6 +10,8 @@ local modules = (...):match('(.*%menori.modules.)')
 local utils = require(modules .. 'libs.utils')
 local new_class
 
+---@param self Class
+---@param _class_name string
 local function extend(self, _class_name, attr)
 	return new_class(_class_name, attr, self)
 end
@@ -24,13 +26,19 @@ local function implement(self, ...)
 	end
 end
 
+---@class Class
+---@field extend fun(self: Class, name: string, attr): Class
+
+---@param class_name string
+---@param attr table
+---@param base_class Class
+---@return Class
 new_class = function(class_name, attr, base_class)
 	local __mt = {
 		__tostring = function(self)
 			return string.format('%p instance of "%s"', self, self.class_name)
 		end,
 	}
-	---@class Class
 	local class = {
 		super = base_class,
 		class_name = class_name,

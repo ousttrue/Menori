@@ -22,6 +22,23 @@ local function getFFIPointer(data)
 	if data.getFFIPointer then return data:getFFIPointer() else return data:getPointer() end
 end
 
+---@class GltfPrimitive
+---@field count integer
+
+---@class GltfMesh
+---@field primitives GltfPrimitive[]
+
+---@class Gltf
+---@field asset any
+---@field nodes any
+---@field scene any
+---@field materials any
+---@field meshes GltfMesh[]
+---@field scenes any
+---@field images any
+---@field animations any
+---@field skins any
+
 ---@class glTFLoader
 local glTFLoader = {}
 local buffers, data
@@ -270,6 +287,7 @@ local function get_vertices_content(attribute_buffers, components_stride, length
 	return temp_data
 end
 
+---@return GltfMesh
 local function init_mesh(mesh)
 	local primitives = {}
 	for j, primitive in ipairs(mesh.primitives) do
@@ -565,22 +583,11 @@ local function glb_parser(glb_data)
 	return json_data, buffers
 end
 
----@class glTF
----@field asset any
----@field nodes any
----@field scene any
----@field materials any
----@field meshes any
----@field scenes any
----@field images any
----@field animations any
----@field skins any
-
 --- Load gltf model by filename.
 -- @function load
 ---@param filename string The filepath to the gltf file (GLTF must be separated (.gltf+.bin+textures) or (.gltf+textures)
 -- @param[opt=love.filesystem.read] function io_read Callback to read the file.
----@return glTF
+---@return Gltf
 function glTFLoader.load(filename)
 	local path = filename:match(".+/")
 	local name, extension = filename:match("([^/]+)%.(.+)$")
@@ -658,6 +665,7 @@ function glTFLoader.load(filename)
 		end
 	end
 
+	---@type GltfMesh[]
 	local meshes = {}
 	for i, v in ipairs(data.meshes) do
 		meshes[i] = init_mesh(v)

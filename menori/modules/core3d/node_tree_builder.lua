@@ -9,10 +9,10 @@
 --[[--
 Module for building scene nodes from a loaded gltf format.
 ]]
--- @module NodeTreeBuilder
 
 local modules = (...):match('(.*%menori.modules.)')
 
+---@class Node
 local Node = require(modules .. '.node')
 local ModelNode = require(modules .. 'core3d.model_node')
 local Mesh = require(modules .. 'core3d.mesh')
@@ -25,6 +25,7 @@ local mat4 = ml.mat4
 local vec3 = ml.vec3
 local quat = ml.quat
 
+---@class NodeTreeBuilder
 local NodeTreeBuilder = {}
 
 local function create_nodes(builder, nodes, i)
@@ -98,9 +99,9 @@ end
 
 
 --- Creates a node tree.
----@param gltf glTF Data obtained with glTFLoader.load
----@param callback function? Callback Called for each built scene with params (scene, builder).
----@return table An array of scenes, where each scene is a menori.Node object
+---@param gltf Gltf Data obtained with glTFLoader.load
+---@param callback fun(node: Node, builder: NodeTreeBuilder)? Callback Called for each built scene with params (scene, builder).
+---@return Node[] An array of scenes, where each scene is a menori.Node object
 function NodeTreeBuilder.create(gltf, callback)
       local builder = {
             meshes = {},
@@ -162,6 +163,7 @@ function NodeTreeBuilder.create(gltf, callback)
             table.insert(builder.animations, animation)
       end
 
+      ---@type Node[]
       local scenes = {}
       for i, v in ipairs(gltf.scenes) do
             local scene_node = Node(v.name)

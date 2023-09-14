@@ -25,12 +25,13 @@ local menori = {
       BoxShape          = require(modules .. 'core3d.boxshape'),
       Mesh              = require(modules .. 'core3d.mesh'),
       ModelNode         = require(modules .. 'core3d.model_node'),
+      ---@class NodeTreeBuilder
       NodeTreeBuilder   = require(modules .. 'core3d.node_tree_builder'),
       GeometryBuffer    = require(modules .. 'core3d.geometry_buffer'),
       InstancedMesh     = require(modules .. 'core3d.instanced_mesh'),
       ---@type fun(...): Camera
       Camera            = require(modules .. 'camera'),
-      ---@type fun(...): Node
+      ---@class Node
       Node              = require(modules .. 'node'),
       ---@type fun(...): Scene
       Scene             = require(modules .. 'scene'),

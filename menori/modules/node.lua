@@ -25,6 +25,7 @@ local bound3  = ml.bound3
 local find_child_by_name
 
 ---@class Node: Class
+---@operator call:Node
 ---@field children Node[] Children of this node.
 ---@field parent Node? Parent of this node.
 ---@field detach_flag boolean [opt=false] Flag that is used to detach this node from its parent during the next scene update.
@@ -252,7 +253,7 @@ function Node:remove_children()
 end
 
 --- Attach child node to this node.
----@vararg ... Node
+---@vararg Node
 ---@return Node[] object
 function Node:attach(...)
       for i, node in ipairs({ ... }) do
