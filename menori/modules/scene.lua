@@ -37,7 +37,7 @@ local function alpha_mode_comp(a, b)
   return priorities[a.material.alpha_mode] < priorities[b.material.alpha_mode]
 end
 
----@param node Node
+---@param node ModelNode
 ---@param scene Scene
 ---@param environment Environment
 local function default_filter(node, scene, environment)
@@ -83,7 +83,6 @@ function scene:render_nodes(node, environment, renderstates, filter)
   end
 
   local canvases = #renderstates > 0
-
   if canvases then
     lovg.setCanvas(renderstates)
   end
@@ -103,7 +102,6 @@ function scene:render_nodes(node, environment, renderstates, filter)
 
   local count = #self.list_drawable_nodes
   self.list_drawable_nodes = {}
-
   return count
 end
 

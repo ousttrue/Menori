@@ -38,7 +38,7 @@ end
 
 ---@class LoaderTexture
 ---@field sampler LoaderSampler
----@field image LoaderImage
+---@field source love.Texture
 
 ---@class LoaderMaterial
 ---@field name string
@@ -46,6 +46,8 @@ end
 ---@fields uniforms table
 ---@field double_sided boolean
 ---@field alpha_mode love.BlendAlphaMode
+---@field alpha_cutoff number
+---@field uniforms table
 
 ---@class LoaderPrimitive
 ---@field mode any
@@ -65,16 +67,18 @@ end
 ---@field joints integer[]
 ---@field skeleton integer?
 
+---@class LoaderAnimation
+
 ---@class LoaderData
----@field asset table
+---@field asset GltfAsset
 ---@field images LoaderImage[]
 ---@field materials LoaderMaterial[]
 ---@field meshes LoaderMesh[]
 ---@field skins LoaderSkin[]
----@field nodes table[]
----@field scenes table[]
+---@field nodes GltfNode[]
+---@field scenes GltfScene[]
 ---@field scene integer?
----@field animations any
+---@field animations LoaderAnimation[]
 
 ---@class glTFLoader
 local glTFLoader = {}
@@ -766,12 +770,14 @@ function glTFLoader.load(filename)
   end
 
   return {
+    -- gltf
     asset = data.asset,
     nodes = data.nodes,
+    scenes = data.scenes,
     scene = data.scene,
+    --
     materials = materials,
     meshes = meshes,
-    scenes = data.scenes,
     images = images,
     animations = animations,
     skins = skins,

@@ -4,6 +4,8 @@
 -- to [LuaCATS](https://luals.github.io/wiki/annotations/)
 --
 
+---@class GltfAsset
+
 ---@class GltfBuffer
 ---@field uri string?
 
@@ -29,23 +31,22 @@
 ---@field JOINTS_0 integer?
 ---@field WEIGHTS_0 integer?
 
----@class GltfPrimitive
----@field attributes GltfAttributes
----@field indices integer?{
----@field material integer?
+---@class GltfSampler
+---@field magFilter integer [9728:NEAREST, 9729:LINEAR]
+---@field minFilter integer [9728:NEAREST, 9729:LINEAR, 9984:NEAREST_MIPMAP_NEAREST, 9985:LINEAR_MIPMAP_NEAREST, 9986:NEAREST_MIPMAP_LINEAR, 9987:LINEAR_MIPMAP_LINEAR]
+---@field wrapS integer [33071:CLAMP_TO_EDGE, 33648:MIRRORED_REPEAT, 10497:REPEAT]
+---@field wrapT integer [33071:CLAMP_TO_EDGE, 33648:MIRRORED_REPEAT, 10497:REPEAT]
 
----@class GltfMesh
----@field primitives GltfPrimitive[]
-
----@class GltfNode
+---@class GltfImage
 ---@field name string?
----@field children integer[]?
----@field matrix number[]?
----@field rotation number[]?
----@field scale number[]?
----@field translation number[]?
----@field mesh integer?
----@field skin integer?
+---@field uri string?
+---@field mimeType string?
+---@field bufferView integer?
+
+---@class GltfTexture
+---@field name string?
+---@field sampler integer?
+---@field source integer
 
 ---@class GltfTextureInfo
 ---@field index integer
@@ -68,30 +69,42 @@
 ---@field alphaCutoff number?
 ---@field doubleSided boolean?
 
----@class GltfSampler
----@field magFilter integer [9728:NEAREST, 9729:LINEAR]
----@field minFilter integer [9728:NEAREST, 9729:LINEAR, 9984:NEAREST_MIPMAP_NEAREST, 9985:LINEAR_MIPMAP_NEAREST, 9986:NEAREST_MIPMAP_LINEAR, 9987:LINEAR_MIPMAP_LINEAR]
----@field wrapS integer [33071:CLAMP_TO_EDGE, 33648:MIRRORED_REPEAT, 10497:REPEAT]
----@field wrapT integer [33071:CLAMP_TO_EDGE, 33648:MIRRORED_REPEAT, 10497:REPEAT]
+---@class GltfPrimitive
+---@field attributes GltfAttributes
+---@field indices integer?{
+---@field material integer?
 
----@class GltfImage
----@field name string?
----@field uri string?
----@field mimeType string?
----@field bufferView integer?
+---@class GltfMesh
+---@field primitives GltfPrimitive[]
 
----@class GltfTexture
+---@class GltfSkin
+
+---@class GltfNode
 ---@field name string?
----@field sampler integer?
----@field source integer
+---@field extras table?
+---@field extensions table?
+---@field children integer[]?
+---@field matrix number[]?
+---@field rotation number[]?
+---@field scale number[]?
+---@field translation number[]?
+---@field mesh integer?
+---@field skin integer?
+
+---@class GltfScene
+---@field name string
+---@field nodes integer[]
 
 ---@class Gltf
+---@field asset GltfAsset
 ---@field buffers GltfBuffer[]
 ---@field bufferViews GltfBufferView[]
 ---@field accessors GltfAccessor[]
 ---@field meshes GltfMesh[]
+---@field skins GltfSkin[]
 ---@field nodes GltfNode[]
 ---@field materials GltfMaterial[]
 ---@field textures GltfTexture[]
 ---@field samplers GltfSampler[]
 ---@field images GltfImage[]
+---@field scenes GltfScene[]

@@ -27,10 +27,10 @@ function scene:init()
 
   self.root_node = menori.Node()
 
-  local gltf = menori.glTFLoader.load "examples/assets/etrian_odyssey_3_monk.glb"
+  local loader = menori.glTFLoader.load "examples/assets/etrian_odyssey_3_monk.glb"
 
   -- build a scene node tree from the gltf data and initialize the animations
-  local scenes = menori.NodeTreeBuilder.create(gltf, function(scene, builder)
+  local scenes = menori.NodeTreeBuilder.create(loader, function(scene, builder)
     self.animations = menori.glTFAnimations(builder.animations)
     self.animations:set_action(1)
   end)

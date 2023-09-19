@@ -38,8 +38,9 @@ local NodeTreeBuilder = {}
 ---@field nodes Node[]
 
 ---@param builder BuilderData
----@param nodes LoaderNode[]
+---@param nodes GltfNode[]
 ---@param i integer
+---@return Node
 local function create_nodes(builder, nodes, i)
   local exist = builder.nodes[i]
   if exist then
@@ -110,17 +111,17 @@ local function update_transform_callback(node)
 end
 
 --- Creates a node tree.
----@param gltf LoaderData Data obtained with glTFLoader.load
+---@param loader LoaderData Data obtained with glTFLoader.load
 ---@param callback fun(node: Node, builder: NodeTreeBuilder)? Callback Called for each built scene with params (scene, builder).
 ---@return Node[] An array of scenes, where each scene is a menori.Node object
-function NodeTreeBuilder.create(gltf, callback)
+function NodeTreeBuilder.create(loader, callback)
   local builder = {
     meshes = {},
     materials = {},
     nodes = {},
   }
 
-  for i, v in ipairs(gltf.meshes) do
+  for i, v in ipairs(loader.meshes) do
     local t = {}
     builder.meshes[i] = t
     for j, primitive in ipairs(v.primitives) do
@@ -128,7 +129,7 @@ function NodeTreeBuilder.create(gltf, callback)
     end
   end
 
-  for i, v in ipairs(gltf.materials) do
+  for i, v in ipairs(loader.materials) do
     local material = Material(v.name)
     material.mesh_cull_mode = v.double_sided and "none" or "back"
     material.alpha_mode = v.alpha_mode
@@ -142,19 +143,19 @@ function NodeTreeBuilder.create(gltf, callback)
     builder.materials[i] = material
   end
 
-  for node_index = 1, #gltf.nodes do
-    local node = create_nodes(builder, gltf.nodes, node_index)
-    local skin = gltf.nodes[node_index].skin
-    if skin then
-      skin = gltf.skins[skin + 1]
+  for node_index = 1, #loader.nodes do
+    local node = create_nodes(builder, loader.nodes, node_index)
+    local skin_index = loader.nodes[node_index].skin
+    if skin_index then
+      local skin = loader.skins[skin_index + 1]
       node.joints = {}
       if skin.skeleton then
-        node.skeleton_node = create_nodes(builder, gltf.nodes, skin.skeleton + 1)
+        node.skeleton_node = create_nodes(builder, loader.nodes, skin.skeleton + 1)
       end
 
       local matrices = skin.inverse_bind_matrices
       for i, joint in ipairs(skin.joints) do
-        local joint_node = create_nodes(builder, gltf.nodes, joint + 1)
+        local joint_node = create_nodes(builder, loader.nodes, joint + 1)
         joint_node.inverse_bind_matrix = mat4(matrices[i])
         node.joints[i] = joint_node
       end
@@ -162,7 +163,7 @@ function NodeTreeBuilder.create(gltf, callback)
   end
 
   builder.animations = {}
-  for i, v in ipairs(gltf.animations) do
+  for i, v in ipairs(loader.animations) do
     local animation = { name = v.name, channels = {} }
     for j, channel in ipairs(v.channels) do
       animation.channels[j] = {
@@ -176,7 +177,7 @@ function NodeTreeBuilder.create(gltf, callback)
 
   ---@type Node[]
   local scenes = {}
-  for i, v in ipairs(gltf.scenes) do
+  for i, v in ipairs(loader.scenes) do
     local scene_node = Node(v.name)
     for _, inode in ipairs(v.nodes) do
       scene_node:attach(builder.nodes[inode + 1])

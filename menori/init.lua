@@ -11,11 +11,11 @@ local modules = (...) and (...):gsub('%.init$', '') .. ".modules." or ""
 
 --- Namespace for all modules in library.
 local menori = {
-      ---@type fun(...): PerspectiveCamera
+      ---@type PerspectiveCamera
       PerspectiveCamera = require(modules .. 'core3d.camera'),
-      ---@type fun(...): Environment
+      ---@type Environment
       Environment       = require(modules .. 'core3d.environment'),
-      ---@type fun(...): UniformList
+      ---@type UniformList
       UniformList       = require(modules .. 'core3d.uniform_list'),
 
       glTFAnimations    = require(modules .. 'core3d.gltf_animations'),
@@ -29,11 +29,11 @@ local menori = {
       NodeTreeBuilder   = require(modules .. 'core3d.node_tree_builder'),
       GeometryBuffer    = require(modules .. 'core3d.geometry_buffer'),
       InstancedMesh     = require(modules .. 'core3d.instanced_mesh'),
-      ---@type fun(...): Camera
+      ---@type Camera
       Camera            = require(modules .. 'camera'),
       ---@class Node
       Node              = require(modules .. 'node'),
-      ---@type fun(...): Scene
+      ---@type Scene
       Scene             = require(modules .. 'scene'),
       Sprite            = require(modules .. 'sprite'),
       SpriteLoader      = require(modules .. 'spriteloader'),

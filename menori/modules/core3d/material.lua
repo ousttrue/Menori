@@ -28,6 +28,9 @@ local ShaderUtils = require(modules .. "shaders.utils")
 ---@field wireframe boolean Sets whether wireframe lines will be used when drawing.
 ---@field mesh_cull_mode love.CullMode Sets whether back-facing triangles in a Mesh are culled.
 ---@field main_texture love.Texture? The texture to be used in mesh:setTexture(). (uniform Image MainTex) in shader.
+---@field alpha_mode string
+---@field alpha_cutoff number
+---@field clone fun():Material
 local Material = UniformList:extend("Material", {
   clone = utils.copy,
 })
