@@ -13,8 +13,8 @@ menori.ml.vec2
 -- @classmod vec2
 -- @alias vec2_mt
 
-local modules = (...):gsub('%.[^%.]+$', '') .. "."
-local utils = require (modules .. "utils")
+local modules = (...):gsub("%.[^%.]+$", "") .. "."
+local utils = require(modules .. "utils")
 
 local vec2 = {}
 local vec2_mt = {}
@@ -38,7 +38,7 @@ end
 
 --- set
 function vec2_mt:set(x, y)
-	if type(x) == 'table' then
+	if type(x) == "table" then
 		x, y = x.x or x[1], x.y or x[2]
 	end
 	self.x = x
@@ -195,9 +195,7 @@ end
 
 --- is vec2
 function vec2.is_vec2(a)
-	return type(a) == "table" and
-		type(a.x) == "number" and
-		type(a.y) == "number"
+	return type(a) == "table" and type(a.x) == "number" and type(a.y) == "number"
 end
 
 --- dot
@@ -215,10 +213,7 @@ end
 --- fract
 -- @static
 function vec2.fract(a)
-	return new(
-		a.x - math.floor(a.x),
-		a.y - math.floor(a.y)
-	)
+	return new(a.x - math.floor(a.x), a.y - math.floor(a.y))
 end
 
 --- lerp
@@ -284,16 +279,15 @@ end
 --- pow
 -- @static
 function vec2.pow(a, b)
-	return new(
-		math.pow(a.x, b.x),
-		math.pow(a.y, b.y)
-	)
+	return new(math.pow(a.x, b.x), math.pow(a.y, b.y))
 end
 
-return setmetatable(vec2, { __call = function(_, x, y)
-	if type(x) == 'table' then
-		local xx, yy = x.x or x[1], x.y or x[2]
-		return new(xx, yy)
-	end
-	return new(x, y)
-end })
+return setmetatable(vec2, {
+	__call = function(_, x, y)
+		if type(x) == "table" then
+			local xx, yy = x.x or x[1], x.y or x[2]
+			return new(xx, yy)
+		end
+		return new(x, y)
+	end,
+})

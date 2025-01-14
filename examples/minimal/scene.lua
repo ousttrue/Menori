@@ -7,28 +7,28 @@
 -------------------------------------------------------------------------------
 ]]
 
-local menori = require 'menori'
+local menori = require("menori")
 
 local ml = menori.ml
 local vec3 = ml.vec3
 local quat = ml.quat
 
 --class inherited from Scene.
-local scene = menori.Scene:extend('minimal_scene')
+local scene = menori.Scene:extend("minimal_scene")
 
 function scene:init()
 	scene.super.init(self)
 
 	local _, _, w, h = menori.app:get_viewport()
-	self.camera = menori.PerspectiveCamera(60, w/h, 0.5, 1024)
+	self.camera = menori.PerspectiveCamera(60, w / h, 0.5, 1024)
 	self.environment = menori.Environment(self.camera)
 
 	self.root_node = menori.Node()
 
-	local gltf = menori.glTFLoader.load('examples/assets/etrian_odyssey_3_monk.glb')
+	local gltf = menori.glTFLoader.load("examples/assets/etrian_odyssey_3_monk.glb")
 
 	-- build a scene node tree from the gltf data and initialize the animations
-	local scenes = menori.NodeTreeBuilder.create(gltf, function (scene, builder)
+	local scenes = menori.NodeTreeBuilder.create(gltf, function(scene, builder)
 		self.animations = menori.glTFAnimations(builder.animations)
 		self.animations:set_action(1)
 	end)
@@ -42,7 +42,7 @@ function scene:render()
 	love.graphics.clear(0.3, 0.25, 0.2)
 	-- recursively draw the scene nodes
 	self:render_nodes(self.root_node, self.environment, {
-		node_sort_comp = menori.Scene.alpha_mode_comp
+		node_sort_comp = menori.Scene.alpha_mode_comp,
 	})
 end
 

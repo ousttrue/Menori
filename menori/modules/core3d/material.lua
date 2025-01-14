@@ -12,41 +12,41 @@ Base class for materials. A material describes the appearance of an object. (Inh
 -- @classmod Material
 -- @see UniformList
 
-local modules = (...):match('(.*%menori.modules.)')
+local modules = (...):match("(.*%menori.modules.)")
 
-local utils = require (modules .. 'libs.utils')
-local UniformList = require (modules .. 'core3d.uniform_list')
+local utils = require(modules .. "libs.utils")
+local UniformList = require(modules .. "core3d.uniform_list")
 
-local ShaderUtils = require (modules .. 'shaders.utils')
+local ShaderUtils = require(modules .. "shaders.utils")
 
-local Material = UniformList:extend('Material', {
-      clone = utils.copy
+local Material = UniformList:extend("Material", {
+	clone = utils.copy,
 })
 
-Material.default_shader = ShaderUtils.shaders['default_mesh']
+Material.default_shader = ShaderUtils.shaders["default_mesh"]
 
 ----
 -- The public constructor.
 -- @tparam string name Name of the material.
 -- @param[opt=Material.default_shader] shader [LOVE Shader](https://love2d.org/wiki/Shader)
 function Material:init(name, shader)
-      Material.super.init(self)
+	Material.super.init(self)
 
-      self.name = name
-      self.shader = shader or Material.default_shader
+	self.name = name
+	self.shader = shader or Material.default_shader
 
-      self.depth_test = true
-      self.depth_func = 'less'
+	self.depth_test = true
+	self.depth_func = "less"
 
-      self.wireframe = false
-      self.mesh_cull_mode = 'back'
+	self.wireframe = false
+	self.mesh_cull_mode = "back"
 
-      self.alpha_mode = 'OPAQUE'
-      self.main_texture = nil
+	self.alpha_mode = "OPAQUE"
+	self.main_texture = nil
 end
 
 Material.default = Material("Default")
-Material.default:set('baseColor', {1, 1, 1, 1})
+Material.default:set("baseColor", { 1, 1, 1, 1 })
 return Material
 
 ---

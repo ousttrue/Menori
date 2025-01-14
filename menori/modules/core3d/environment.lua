@@ -12,13 +12,13 @@ An environment is a class that sends information about the current settings of t
 ]]
 -- @classmod Environment
 
-local modules = (...):match('(.*%menori.modules.)')
+local modules = (...):match("(.*%menori.modules.)")
 
-local utils       = require (modules .. 'libs.utils')
-local UniformList = require (modules .. 'core3d.uniform_list')
-local ml          = require (modules .. 'ml')
+local utils = require(modules .. "libs.utils")
+local UniformList = require(modules .. "core3d.uniform_list")
+local ml = require(modules .. "ml")
 
-local Environment = UniformList:extend('Environment')
+local Environment = UniformList:extend("Environment")
 
 local temp_projection_m = ml.mat4()
 local temp_int_view_m = ml.mat4()
@@ -61,8 +61,8 @@ function Environment:send_uniforms_to(shader)
 		temp_projection_m[6] = -temp_projection_m[6]
 	end
 
-	shader:send("m_view", 'column', camera.m_view.data)
-	shader:send("m_projection", 'column', temp_projection_m.data)
+	shader:send("m_view", "column", camera.m_view.data)
+	shader:send("m_projection", "column", temp_projection_m.data)
 
 	if shader:hasUniform("m_inv_view") then
 		temp_int_view_m:copy(camera.m_view)
@@ -80,10 +80,10 @@ end
 -- @param shader [LOVE Shader](https://love2d.org/wiki/Shader)
 function Environment:apply_shader(shader)
 	--if self._shader_object_cache ~= shader then
-		love.graphics.setShader(shader)
+	love.graphics.setShader(shader)
 
-		self:send_uniforms_to(shader)
-		self._shader_object_cache = shader
+	self:send_uniforms_to(shader)
+	self._shader_object_cache = shader
 	--end
 end
 
@@ -94,7 +94,7 @@ end
 -- @param shader [LOVE Shader](https://love2d.org/wiki/Shader)
 function Environment:send_light_sources_to(shader)
 	for k, v in pairs(self.lights) do
-		utils.noexcept_send_uniform(shader, k .. '_count', #v)
+		utils.noexcept_send_uniform(shader, k .. "_count", #v)
 		for i, light in ipairs(v) do
 			light:send_to(shader, k .. "[" .. (i - 1) .. "].")
 		end

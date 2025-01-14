@@ -7,7 +7,7 @@
 -------------------------------------------------------------------------------
 ]]
 
-local menori = require 'menori'
+local menori = require("menori")
 
 local ml = menori.ml
 local vec3 = ml.vec3
@@ -15,44 +15,45 @@ local quat = ml.quat
 local ml_utils = ml.utils
 
 -- class inherited from UniformList for a light source.
-local PointLight = menori.UniformList:extend('PointLight')
+local PointLight = menori.UniformList:extend("PointLight")
 function PointLight:init(x, y, z, r, g, b)
 	PointLight.super.init(self)
 
-	self:set('position', {x, y, z})
-	self:set('constant', 1.0)
-	self:set('linear', 0.3)
-	self:set('quadratic', 0.032)
-	self:set('ambient', {r, g, b})
-	self:set('diffuse', {r, g, b})
-	self:set('specular', {r, g, b})
+	self:set("position", { x, y, z })
+	self:set("constant", 1.0)
+	self:set("linear", 0.3)
+	self:set("quadratic", 0.032)
+	self:set("ambient", { r, g, b })
+	self:set("diffuse", { r, g, b })
+	self:set("specular", { r, g, b })
 end
 
-local scene = menori.Scene:extend('basic_lighting_scene')
+local scene = menori.Scene:extend("basic_lighting_scene")
 
 function scene:init()
 	scene.super.init(self)
 
 	local _, _, w, h = menori.app:get_viewport()
-	self.camera = menori.PerspectiveCamera(60, w/h, 0.5, 1024)
+	self.camera = menori.PerspectiveCamera(60, w / h, 0.5, 1024)
 	self.environment = menori.Environment(self.camera)
 
 	-- adding light sources
-	self.environment:add_light('point_lights', PointLight(0, 0.5, 2, 0.8, 0.3, 0.1))
-	self.environment:add_light('point_lights', PointLight(2,   1,-1, 0.1, 0.3, 0.8))
+	self.environment:add_light("point_lights", PointLight(0, 0.5, 2, 0.8, 0.3, 0.1))
+	self.environment:add_light("point_lights", PointLight(2, 1, -1, 0.1, 0.3, 0.8))
 
 	self.root_node = menori.Node()
 	self.aabb_root = self.root_node:attach(menori.Node())
 
 	-- loading the fragment shader code for lighting
-	local lighting_frag = menori.utils.shader_preprocess(love.filesystem.read('examples/basic_lighting/basic_lighting_frag.glsl'))
-	local lighting_shader = love.graphics.newShader(menori.ShaderUtils.cache['default_mesh_vert'], lighting_frag)
+	local lighting_frag =
+		menori.utils.shader_preprocess(love.filesystem.read("examples/basic_lighting/basic_lighting_frag.glsl"))
+	local lighting_shader = love.graphics.newShader(menori.ShaderUtils.cache["default_mesh_vert"], lighting_frag)
 
-	local gltf = menori.glTFLoader.load('examples/assets/pokemon_firered_-_players_room.glb')
-	local scenes = menori.NodeTreeBuilder.create(gltf, function (scene, builder)
+	local gltf = menori.glTFLoader.load("examples/assets/pokemon_firered_-_players_room.glb")
+	local scenes = menori.NodeTreeBuilder.create(gltf, function(scene, builder)
 		-- Callback for each scene in the gltf.
 		-- Create AABB for each node and add it to the aabb_root node.
-		scene:traverse(function (node)
+		scene:traverse(function(node)
 			if node.mesh then
 				node.material.shader = lighting_shader
 
@@ -84,7 +85,7 @@ function scene:render()
 	-- Recursively draw all the nodes that were attached to the root node.
 	-- Sorting nodes by transparency.
 	self:render_nodes(self.root_node, self.environment, {
-		node_sort_comp = menori.Scene.alpha_mode_comp
+		node_sort_comp = menori.Scene.alpha_mode_comp,
 	})
 end
 
@@ -95,7 +96,7 @@ function scene:update_camera()
 	self.camera.eye = q + v
 	self.camera:update_view_matrix()
 
-	self.environment:set_vector('view_position', self.camera.eye)
+	self.environment:set_vector("view_position", self.camera.eye)
 end
 
 -- camera control

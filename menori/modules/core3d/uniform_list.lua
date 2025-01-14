@@ -11,13 +11,16 @@ A class that stores a list of Uniform variables and implements their sending to 
 ]]
 --- @classmod UniformList
 
-local modules = (...):match('(.*%menori.modules.)')
-local class = require (modules .. 'libs.class')
+local modules = (...):match("(.*%menori.modules.)")
+local class = require(modules .. "libs.class")
 
-local UniformList = class('UniformList')
+local UniformList = class("UniformList")
 
 local uniform_types = {
-	[1] = 'any', [2] = 'color', [3] = 'matrix', [4] = 'vector',
+	[1] = "any",
+	[2] = "color",
+	[3] = "matrix",
+	[4] = "vector",
 }
 
 local function locate_uniform(list, name, constant, type)
@@ -26,7 +29,13 @@ local function locate_uniform(list, name, constant, type)
 		uniform = { type = type, constant = constant }
 		list[name] = uniform
 	elseif constant then
-		error(string.format('set_uniform: attempt to assign a new value to a constant - "%s" type - "type"', name, uniform_types[type]))
+		error(
+			string.format(
+				'set_uniform: attempt to assign a new value to a constant - "%s" type - "type"',
+				name,
+				uniform_types[type]
+			)
+		)
 	end
 	return uniform
 end
@@ -41,7 +50,7 @@ end
 -- @param ... See shader:send(name, ...)
 function UniformList:set(name, ...)
 	local uniform = locate_uniform(self.list, name, false, 1)
-	uniform.value = {...}
+	uniform.value = { ... }
 end
 
 --- Set one or more color values into uniform list.
@@ -49,7 +58,7 @@ end
 -- @param ... See shader:sendColor(name, ...)
 function UniformList:set_color(name, ...)
 	local uniform = locate_uniform(self.list, name, false, 2)
-	uniform.value = {...}
+	uniform.value = { ... }
 end
 
 --- Set matrix object into uniform list.
@@ -85,23 +94,19 @@ end
 -- @param shader [LOVE Shader](https://love2d.org/wiki/Shader)
 -- @param[opt=''] concat_str A string to be added before each Uniform name.
 function UniformList:send_to(shader, concat_str)
-	concat_str = concat_str or ''
+	concat_str = concat_str or ""
 	for k, v in pairs(self.list) do
 		local name = concat_str .. k
 		if shader:hasUniform(name) then
-			if
-			v.type == 1 then
+			if v.type == 1 then
 				shader:send(name, unpack(v.value))
-			elseif
-			v.type == 2 then
+			elseif v.type == 2 then
 				shader:sendColor(name, unpack(v.value))
-			elseif
-			v.type == 3 then
+			elseif v.type == 3 then
 				shader:send(name, v.value.data)
-			elseif
-			v.type == 4 then
-				shader:send(name, {v.value:unpack()})
-			--[[elseif
+			elseif v.type == 4 then
+				shader:send(name, { v.value:unpack() })
+				--[[elseif
 			v.type == 5 then
 				local t = {}
 				for i = 1, #v.value do

@@ -13,8 +13,8 @@ menori.ml.vec3
 -- @classmod vec3
 -- @alias vec3_mt
 
-local modules = (...):gsub('%.[^%.]+$', '') .. "."
-local utils = require (modules .. "utils")
+local modules = (...):gsub("%.[^%.]+$", "") .. "."
+local utils = require(modules .. "utils")
 
 local vec3 = {}
 local vec3_mt = {}
@@ -29,7 +29,7 @@ local function new(x, y, z)
 	}, vec3_mt)
 end
 
-vec3.zero   = new()
+vec3.zero = new()
 vec3.unit_x = new(1, 0, 0)
 vec3.unit_y = new(0, 1, 0)
 vec3.unit_z = new(0, 0, 1)
@@ -41,7 +41,7 @@ end
 
 --- set
 function vec3_mt:set(x, y, z)
-	if type(x) == 'table' then
+	if type(x) == "table" then
 		x, y, z = x.x or x[1], x.y or x[2], x.z or x[3]
 	end
 	self.x = x
@@ -226,11 +226,11 @@ vec3._mt = vec3_mt
 --- is vec3
 -- @static
 function vec3.is_vec3(a)
-	return type(a) == "table" and
-		type(a.x) == "number" and
-		type(a.y) == "number" and
-		type(a.z) == "number" and
-		type(a.w) == "nil"
+	return type(a) == "table"
+		and type(a.x) == "number"
+		and type(a.y) == "number"
+		and type(a.z) == "number"
+		and type(a.w) == "nil"
 end
 
 --- dot
@@ -248,21 +248,13 @@ end
 --- fract
 -- @static
 function vec3.fract(a)
-	return new(
-		a.x - math.floor(a.x),
-		a.y - math.floor(a.y),
-		a.z - math.floor(a.z)
-	)
+	return new(a.x - math.floor(a.x), a.y - math.floor(a.y), a.z - math.floor(a.z))
 end
 
 --- cross
 -- @static
 function vec3.cross(a, b)
-	return new(
-		a.y * b.z - a.z * b.y,
-		a.z * b.x - a.x * b.z,
-		a.x * b.y - a.y * b.x
-	)
+	return new(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
 end
 
 --- lerp
@@ -297,7 +289,7 @@ end
 --- notEqual
 -- @static
 function vec3.notEqual(a, b)
-	return { a.x ~= b.x, a.y ~= b.y, a.z ~= b.z  }
+	return { a.x ~= b.x, a.y ~= b.y, a.z ~= b.z }
 end
 
 --- lessThan
@@ -327,17 +319,15 @@ end
 --- pow
 -- @static
 function vec3.pow(a, b)
-	return new(
-		math.pow(a.x, b.x),
-		math.pow(a.y, b.y),
-		math.pow(a.z, b.z)
-	)
+	return new(math.pow(a.x, b.x), math.pow(a.y, b.y), math.pow(a.z, b.z))
 end
 
-return setmetatable(vec3, { __call = function(_, x, y, z)
-	if type(x) == 'table' then
-		local xx, yy, zz = x.x or x[1], x.y or x[2], x.z or x[3]
-		return new(xx, yy, zz)
-	end
-	return new(x, y, z)
-end })
+return setmetatable(vec3, {
+	__call = function(_, x, y, z)
+		if type(x) == "table" then
+			local xx, yy, zz = x.x or x[1], x.y or x[2], x.z or x[3]
+			return new(xx, yy, zz)
+		end
+		return new(x, y, z)
+	end,
+})

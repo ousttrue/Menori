@@ -7,7 +7,7 @@
 -------------------------------------------------------------------------------
 ]]
 
-local menori = require ('menori')
+local menori = require("menori")
 
 local ml = menori.ml
 local vec3 = ml.vec3
@@ -17,18 +17,14 @@ local ml_utils = ml.utils
 local function generate_hemisphere_kernels(size)
 	local samples = {}
 	for i = 1, size do
-		local v = vec3(
-			love.math.random()*2.0 - 1.0,
-			love.math.random()*2.0 - 1.0,
-			love.math.random()
-		)
+		local v = vec3(love.math.random() * 2.0 - 1.0, love.math.random() * 2.0 - 1.0, love.math.random())
 		v = v:normalize()
 		v = v * love.math.random()
-		local scale = (i) / size
-		scale = ml.utils.lerp(0.1, 1.0, scale*scale)
+		local scale = i / size
+		scale = ml.utils.lerp(0.1, 1.0, scale * scale)
 		v = v * scale
 		local x, y, z = v:unpack()
-		table.insert(samples, {x, y, z})
+		table.insert(samples, { x, y, z })
 	end
 	return samples
 end
@@ -43,42 +39,43 @@ local function generate_ssao_noise_texture()
 		return r, g, b, a
 	end)
 	local image = love.graphics.newImage(image_data)
-	image:setFilter('nearest', 'nearest')
-	image:setWrap('repeat', 'repeat')
+	image:setFilter("nearest", "nearest")
+	image:setWrap("repeat", "repeat")
 	return image
 end
 
 local function init_ssao_shader()
 	local bias = 0.04
 	local noise_t = generate_ssao_noise_texture()
-	local ssao_shader = love.graphics.newShader('examples/SSAO/ssao.glsl')
+	local ssao_shader = love.graphics.newShader("examples/SSAO/ssao.glsl")
 	local samples = generate_hemisphere_kernels(64)
 
-	ssao_shader:send('kernel_size', 64)
-	ssao_shader:send('samples', unpack(samples))
-	ssao_shader:send('noise_texture', noise_t)
-	ssao_shader:send('bias', bias)
+	ssao_shader:send("kernel_size", 64)
+	ssao_shader:send("samples", unpack(samples))
+	ssao_shader:send("noise_texture", noise_t)
+	ssao_shader:send("bias", bias)
 	return ssao_shader
 end
 
-local scene = menori.Scene:extend('SSAO_scene')
+local scene = menori.Scene:extend("SSAO_scene")
 
 function scene:init()
 	scene.super.init(self)
 
 	local _, _, w, h = menori.app:get_viewport()
-	self.ssao_c      = love.graphics.newCanvas(w, h)
+	self.ssao_c = love.graphics.newCanvas(w, h)
 	self.ssao_blur_c = love.graphics.newCanvas(w, h)
-	self.albedo_c    = love.graphics.newCanvas(w, h)
-	self.normal_c    = love.graphics.newCanvas(w, h, { format = 'rgba16f' })
-	self.depth24_c   = love.graphics.newCanvas(w, h, { readable = true, format = 'depth24' })
+	self.albedo_c = love.graphics.newCanvas(w, h)
+	self.normal_c = love.graphics.newCanvas(w, h, { format = "rgba16f" })
+	self.depth24_c = love.graphics.newCanvas(w, h, { readable = true, format = "depth24" })
 
 	self.view_scale = 4
 	self.x_angle = -60
 	self.y_angle = -30
 
 	self.render_state = {
-		self.albedo_c, self.normal_c, -- in deferred shader love_Canvases[0] - albedo; love_Canvases[1] - normal;
+		self.albedo_c,
+		self.normal_c, -- in deferred shader love_Canvases[0] - albedo; love_Canvases[1] - normal;
 		depthstencil = self.depth24_c,
 		node_sort_comp = menori.Scene.alpha_mode_comp,
 		clear = true,
@@ -86,23 +83,23 @@ function scene:init()
 
 	self.ssao_radius = 0.85
 	self.ssao_shader = init_ssao_shader()
-	self.apply_ssao_shader = love.graphics.newShader('examples/SSAO/apply_ssao.glsl')
-	self.ssao_blur_shader = love.graphics.newShader('examples/SSAO/ssao_blur.glsl')
+	self.apply_ssao_shader = love.graphics.newShader("examples/SSAO/apply_ssao.glsl")
+	self.ssao_blur_shader = love.graphics.newShader("examples/SSAO/ssao_blur.glsl")
 
-	self.camera = menori.PerspectiveCamera(60, w/h, 0.1, 1024)
+	self.camera = menori.PerspectiveCamera(60, w / h, 0.1, 1024)
 	self.environment = menori.Environment(self.camera)
 
 	self.root_node = menori.Node()
 
-	local gltf = menori.glTFLoader.load('examples/assets/choco_bunny.glb')
-	local scenes = menori.NodeTreeBuilder.create(gltf, function (scene, builder)
-		scene:traverse(function (node)
+	local gltf = menori.glTFLoader.load("examples/assets/choco_bunny.glb")
+	local scenes = menori.NodeTreeBuilder.create(gltf, function(scene, builder)
+		scene:traverse(function(node)
 			if node.mesh then
 				-- use deferred shader
 				if node.skeleton_node then
-					node.material.shader = menori.ShaderUtils.shaders['deferred_mesh_skinning']
+					node.material.shader = menori.ShaderUtils.shaders["deferred_mesh_skinning"]
 				else
-					node.material.shader = menori.ShaderUtils.shaders['deferred_mesh']
+					node.material.shader = menori.ShaderUtils.shaders["deferred_mesh"]
 				end
 			end
 		end)
@@ -118,10 +115,10 @@ function scene:init()
 end
 
 local tips = {
-	{ text = "SSAO enable (press Z): ", key = 'z', boolean = true },
-	{ text = "SSAO range check (press X): ", key = 'x', boolean = true },
-	{ text = "Apply SSAO blur (press C): ", key = 'c', boolean = true },
-	{ text = "Only draw SSAO (press V): ", key = 'v', boolean = false },
+	{ text = "SSAO enable (press Z): ", key = "z", boolean = true },
+	{ text = "SSAO range check (press X): ", key = "x", boolean = true },
+	{ text = "Apply SSAO blur (press C): ", key = "c", boolean = true },
+	{ text = "Only draw SSAO (press V): ", key = "v", boolean = false },
 }
 
 function scene:render()
@@ -136,15 +133,15 @@ function scene:render()
 		love.graphics.clear()
 		love.graphics.setShader(self.ssao_shader)
 
-		self.ssao_shader:send('range_check_enable', tips[2].boolean)
-		self.ssao_shader:send('inv_projection', 'column', self.temp_inv_projection_m.data)
-		self.ssao_shader:send('projection', 'column', self.temp_projection_m.data)
-		self.ssao_shader:send('normal_c', self.normal_c)
-		self.ssao_shader:send('depth24_c', self.depth24_c)
-		self.ssao_shader:send('radius', self.ssao_radius)
+		self.ssao_shader:send("range_check_enable", tips[2].boolean)
+		self.ssao_shader:send("inv_projection", "column", self.temp_inv_projection_m.data)
+		self.ssao_shader:send("projection", "column", self.temp_projection_m.data)
+		self.ssao_shader:send("normal_c", self.normal_c)
+		self.ssao_shader:send("depth24_c", self.depth24_c)
+		self.ssao_shader:send("radius", self.ssao_radius)
 
 		local _, _, w, h = menori.app:get_viewport()
-		love.graphics.rectangle('fill', 0, 0, w, h)
+		love.graphics.rectangle("fill", 0, 0, w, h)
 		love.graphics.setShader()
 		love.graphics.setCanvas()
 
@@ -153,9 +150,9 @@ function scene:render()
 			-- apply blur to ssao, store result in ssao_blur canvas
 			love.graphics.setCanvas(self.ssao_blur_c)
 			love.graphics.setShader(self.ssao_blur_shader)
-			self.ssao_blur_shader:send('ssao_c', self.ssao_c)
+			self.ssao_blur_shader:send("ssao_c", self.ssao_c)
 
-			love.graphics.rectangle('fill', 0, 0, w, h)
+			love.graphics.rectangle("fill", 0, 0, w, h)
 
 			love.graphics.setShader()
 			love.graphics.setCanvas()
@@ -170,7 +167,7 @@ function scene:render()
 			-- apply blurred ssao to albedo
 			-- draw result on the screen
 			love.graphics.setShader(self.apply_ssao_shader)
-			self.apply_ssao_shader:send('ssao_c', result_ssao_canvas)
+			self.apply_ssao_shader:send("ssao_c", result_ssao_canvas)
 			love.graphics.draw(self.albedo_c)
 			love.graphics.setShader()
 		end
@@ -186,8 +183,8 @@ function scene:render()
 		y = y + 15
 	end
 	love.graphics.print("SSAO radius (hold Q or E): " .. self.ssao_radius, 10, y)
-	love.graphics.print("Hold the right mouse button to rotate the camera.", 10, y+30)
-	love.graphics.print("Use mousewheel for zoom.", 10, y+45)
+	love.graphics.print("Hold the right mouse button to rotate the camera.", 10, y + 30)
+	love.graphics.print("Use mousewheel for zoom.", 10, y + 45)
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
@@ -215,10 +212,10 @@ end
 function scene:update(dt)
 	self:update_nodes(self.root_node, self.environment)
 
-	if love.keyboard.isDown('q') then
+	if love.keyboard.isDown("q") then
 		self.ssao_radius = self.ssao_radius + 0.001
 	end
-	if love.keyboard.isDown('e') and self.ssao_radius > 0.001 then
+	if love.keyboard.isDown("e") and self.ssao_radius > 0.001 then
 		self.ssao_radius = self.ssao_radius - 0.001
 	end
 

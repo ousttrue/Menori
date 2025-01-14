@@ -11,17 +11,17 @@ A class that provides functionality for gltf animations.
 ]]
 -- @classmod glTFAnimation
 
-local modules = (...):match('(.*%menori.modules.)')
+local modules = (...):match("(.*%menori.modules.)")
 
-local class = require (modules .. 'libs.class')
-local utils = require (modules .. 'libs.utils')
-local ml    = require (modules .. 'ml')
-local Node  = require (modules .. 'node')
+local class = require(modules .. "libs.class")
+local utils = require(modules .. "libs.utils")
+local ml = require(modules .. "ml")
+local Node = require(modules .. "node")
 
-local vec3  = ml.vec3
-local quat  = ml.quat
+local vec3 = ml.vec3
+local quat = ml.quat
 
-local glTFAnimation = class('glTFAnimations')
+local glTFAnimation = class("glTFAnimations")
 
 ----
 -- The public constructor.
@@ -43,11 +43,10 @@ local function get_sampler_data(accumulator, sampler, target)
 	local frame1 = sampler.data_array[frame1_index]
 	local frame2 = sampler.data_array[frame2_index]
 
-	if sampler.interpolation == 'STEP' or frame1_index == frame2_index then
-		if target == 'rotation' then
+	if sampler.interpolation == "STEP" or frame1_index == frame2_index then
+		if target == "rotation" then
 			return quat(frame1)
-		elseif target == 'weights' then
-
+		elseif target == "weights" then
 		else
 			return vec3(frame1)
 		end
@@ -56,13 +55,12 @@ local function get_sampler_data(accumulator, sampler, target)
 	local time1 = sampler.time_array[frame1_index]
 	local time2 = sampler.time_array[frame2_index]
 
-	local s = ((accumulator) - time1) / (time2 - time1)
+	local s = (accumulator - time1) / (time2 - time1)
 
-	if sampler.interpolation == 'LINEAR' then
-		if target == 'rotation' then
+	if sampler.interpolation == "LINEAR" then
+		if target == "rotation" then
 			return quat.slerp(quat(frame1), quat(frame2), s)
-		elseif target == 'weights' then
-
+		elseif target == "weights" then
 		else
 			return vec3.lerp(vec3(frame1), vec3(frame2), s)
 		end
@@ -72,11 +70,10 @@ local function get_sampler_data(accumulator, sampler, target)
 end
 
 local target_path = {
-      rotation = Node.set_rotation,
-      translation = Node.set_position,
-      scale = Node.set_scale,
-      weights = function ()
-	end
+	rotation = Node.set_rotation,
+	translation = Node.set_position,
+	scale = Node.set_scale,
+	weights = function() end,
 }
 
 ----

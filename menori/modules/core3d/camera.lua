@@ -11,17 +11,17 @@ Perspective camera class.
 ]]
 -- @classmod PerspectiveCamera
 
-local modules = (...):match('(.*%menori.modules.)')
-local class = require (modules .. 'libs.class')
-local ml 	= require (modules .. 'ml')
-local app   = require (modules .. 'deprecated.app')
+local modules = (...):match("(.*%menori.modules.)")
+local class = require(modules .. "libs.class")
+local ml = require(modules .. "ml")
+local app = require(modules .. "deprecated.app")
 
 local mat4 = ml.mat4
 local vec2 = ml.vec2
 local vec3 = ml.vec3
 local vec4 = ml.vec4
 
-local PerspectiveCamera = class('PerspectiveCamera')
+local PerspectiveCamera = class("PerspectiveCamera")
 
 ----
 -- The public constructor.
@@ -39,9 +39,9 @@ function PerspectiveCamera:init(fov, aspect, nclip, fclip)
 	self.m_inv_projection = self.m_projection:clone():inverse()
 	self.m_view = mat4()
 
-	self.eye 	= vec3( 0, 0, 0 )
-	self.center = vec3( 0, 0, 1 )
-	self.up 	= vec3( 0, 1, 0 )
+	self.eye = vec3(0, 0, 0)
+	self.center = vec3(0, 0, 1)
+	self.up = vec3(0, 1, 0)
 end
 
 ----
@@ -58,13 +58,14 @@ end
 -- @tparam table viewport (optional) viewport rectangle (x, y, w, h)
 -- @treturn table that containing {position = vec3, direction = vec3}
 function PerspectiveCamera:screen_point_to_ray(x, y, viewport)
-	viewport = viewport or {app:get_viewport()}
+	viewport = viewport or { app:get_viewport() }
 
 	local m_pos = vec3(mat4.unproject(vec3(x, y, 1), self.m_view, self.m_projection, viewport))
 	local c_pos = self.eye:clone()
 	local direction = vec3():sub(m_pos, self.eye):normalize()
 	return {
-		position = c_pos, direction = direction
+		position = c_pos,
+		direction = direction,
 	}
 end
 
@@ -76,12 +77,12 @@ end
 -- @tparam number z screen position z
 -- @treturn vec2 object
 function PerspectiveCamera:world_to_screen_point(x, y, z, viewport)
-	if type(x) == 'table' then
+	if type(x) == "table" then
 		viewport = y
 		x, y, z = x.x, x.y, x.z
 	end
 
-	viewport = viewport or {app:get_viewport()}
+	viewport = viewport or { app:get_viewport() }
 
 	local m_proj = self.m_projection
 	local m_view = self.m_view
@@ -93,15 +94,9 @@ function PerspectiveCamera:world_to_screen_point(x, y, z, viewport)
 		return vec2(0, 0)
 	end
 
-	local ndc_space_pos = vec2(
-		proj_p.x / proj_p.w,
-		proj_p.y / proj_p.w
-	)
+	local ndc_space_pos = vec2(proj_p.x / proj_p.w, proj_p.y / proj_p.w)
 
-	local screen_space_pos = vec2(
-		(ndc_space_pos.x + 1) / 2 * viewport[3],
-		(ndc_space_pos.y - 1) /-2 * viewport[4]
-	)
+	local screen_space_pos = vec2((ndc_space_pos.x + 1) / 2 * viewport[3], (ndc_space_pos.y - 1) / -2 * viewport[4])
 
 	return screen_space_pos
 end

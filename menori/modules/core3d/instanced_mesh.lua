@@ -11,16 +11,16 @@ Class provides instancing functionality for Meshes.
 ]]
 -- @classmod InstancedMesh
 
-local modules = (...):match('(.*%menori.modules.)')
+local modules = (...):match("(.*%menori.modules.)")
 
-local class = require (modules .. 'libs.class')
+local class = require(modules .. "libs.class")
 
 local lg = love.graphics
 
-local InstancedMesh = class('InstancedMesh')
+local InstancedMesh = class("InstancedMesh")
 
 local default_format = {
-      {name = "instance_position", format = "floatvec3"},
+	{ name = "instance_position", format = "floatvec3" },
 }
 
 ----
@@ -29,7 +29,7 @@ function InstancedMesh:init(lg_mesh, instanced_format)
 	instanced_format = instanced_format or default_format
 	self.lg_mesh = lg_mesh
 	-- self.instanced_mesh_buffer = love.graphics.newBuffer(instanced_format, 16, { vertex = true })
-	self.instanced_mesh_buffer = love.graphics.newMesh(instanced_format, 16, 'triangles', 'dynamic')
+	self.instanced_mesh_buffer = love.graphics.newMesh(instanced_format, 16, "triangles", "dynamic")
 
 	self.format = instanced_format
 	self.format_attribute_indices_map = {}
@@ -68,7 +68,7 @@ function InstancedMesh:_reallocate(current_count)
 	local instance_count = self.instanced_mesh_buffer:getVertexCount()
 	if current_count > instance_count then
 		self:_detach_buffer()
-		local temp_mesh = love.graphics.newMesh(self.format, instance_count * 2, 'triangles', 'dynamic')
+		local temp_mesh = love.graphics.newMesh(self.format, instance_count * 2, "triangles", "dynamic")
 		for i = 1, instance_count do
 			temp_mesh:setVertex(i, self.instanced_mesh_buffer:getVertex(i))
 		end

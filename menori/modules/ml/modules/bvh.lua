@@ -15,16 +15,16 @@
 --- BVH Tree
 -- @classmod bvh
 
-local modules   = (...):gsub('%.[^%.]+$', '') .. "."
-local intersect = require (modules .. 'intersect')
-local vec3      = require (modules .. 'vec3')
-local bound3    = require (modules .. 'bound3')
-local EPSILON   = 1e-6
-local BVH       = {}
-local BVHNode   = {}
+local modules = (...):gsub("%.[^%.]+$", "") .. "."
+local intersect = require(modules .. "intersect")
+local vec3 = require(modules .. "vec3")
+local bound3 = require(modules .. "bound3")
+local EPSILON = 1e-6
+local BVH = {}
+local BVHNode = {}
 local Node
 
-BVH.__index     = BVH
+BVH.__index = BVH
 BVHNode.__index = BVHNode
 
 local temp_vec = vec3()
@@ -77,7 +77,7 @@ local function new(mesh, max_triangles_per_node, matrix)
 				tree._mesh_indices[indices_i + 1],
 				tree._mesh_indices[indices_i + 2],
 				tree._mesh_indices[indices_i + 3],
-			}
+			},
 		}
 	end
 
@@ -130,7 +130,7 @@ function BVH:intersect_aabb(aabb)
 
 			for i = node._start_index, node._end_index do
 				table.insert(intersecting, {
-					triangle = self:_extract_triangle(self._bbox_array[i])
+					triangle = self:_extract_triangle(self._bbox_array[i]),
 				})
 			end
 		end
@@ -169,7 +169,7 @@ function BVH:intersect_ray(ray, backfaceCulling)
 		end
 	end
 
-	table.sort(intersecting, function (a, b)
+	table.sort(intersecting, function(a, b)
 		return a.distance < b.distance
 	end)
 
@@ -183,13 +183,11 @@ function BVH:calculate_extents(start_index, end_index, expand_by)
 		return bound3()
 	end
 
-	local bound = bound3(
-		vec3(math.huge), vec3(-math.huge)
-	)
+	local bound = bound3(vec3(math.huge), vec3(-math.huge))
 	local min = bound.min
 	local max = bound.max
 
-	for i= start_index, end_index do
+	for i = start_index, end_index do
 		local src_bound = self._bbox_array[i].bound
 		min.x = math.min(src_bound.min.x, min.x)
 		min.y = math.min(src_bound.min.y, min.y)
@@ -213,24 +211,24 @@ function BVH:split_node(node)
 	local start_index = node._start_index
 	local end_index = node._end_index
 
-	local lt_node = { {},{},{} }
-	local rt_node = { {},{},{} }
+	local lt_node = { {}, {}, {} }
+	local rt_node = { {}, {}, {} }
 	local extent_centers = { node:center_x(), node:center_y(), node:center_z() }
 
 	local extents_length = {
 		node.extents.max.x - node.extents.min.x,
 		node.extents.max.y - node.extents.min.y,
-		node.extents.max.z - node.extents.min.z
+		node.extents.max.z - node.extents.min.z,
 	}
 
 	local object_center = {}
-	for i=start_index, end_index do
+	for i = start_index, end_index do
 		local bound = self._bbox_array[i].bound
 		object_center[1] = (bound.min.x + bound.max.x) * 0.5 -- center = (min + max) / 2
 		object_center[2] = (bound.min.y + bound.max.y) * 0.5 -- center = (min + max) / 2
 		object_center[3] = (bound.min.z + bound.max.z) * 0.5 -- center = (min + max) / 2
 
-		for j=1, 3 do
+		for j = 1, 3 do
 			if object_center[j] < extent_centers[j] then
 				table.insert(lt_node[j], i)
 			else
@@ -245,7 +243,7 @@ function BVH:split_node(node)
 	local split_failed = {
 		#lt_node[1] == 0 or #rt_node[1] == 0,
 		#lt_node[2] == 0 or #rt_node[2] == 0,
-		#lt_node[3] == 0 or #rt_node[3] == 0
+		#lt_node[3] == 0 or #rt_node[3] == 0,
 	}
 
 	if split_failed[1] and split_failed[2] and split_failed[3] then
@@ -261,7 +259,7 @@ function BVH:split_node(node)
 	local lt_elements
 	local rt_elements
 
-	for i=1, 3 do
+	for i = 1, 3 do
 		local candidate_index = split_order[i]
 		if not split_failed[candidate_index] then
 			lt_elements = lt_node[candidate_index]
@@ -281,7 +279,7 @@ function BVH:split_node(node)
 	local dst, src
 
 	for i = 1, #rt_elements do
-		lt_elements[#lt_elements+1] = rt_elements[i]
+		lt_elements[#lt_elements + 1] = rt_elements[i]
 	end
 
 	for i = 1, #lt_elements do
@@ -332,7 +330,7 @@ function BVH._calcTValues(min_value, max_value, ray_origin_coord, invdir)
 end
 
 function BVH.intersectNodeBox(origin, inv_direction, node)
-	local t  = BVH._calcTValues(node.min.x, node.max.x, origin.x, inv_direction.x)
+	local t = BVH._calcTValues(node.min.x, node.max.x, origin.x, inv_direction.x)
 	local ty = BVH._calcTValues(node.min.y, node.max.y, origin.y, inv_direction.y)
 
 	if t.min > ty.max or ty.min > t.max then
@@ -376,7 +374,7 @@ local function new_node(extents, start_index, end_index, level)
 		extents = extents,
 		_start_index = start_index,
 		_end_index = end_index,
-		_level = level
+		_level = level,
 		--_node0    = nil
 		--_node1    = nil
 	}, BVHNode)
@@ -399,8 +397,8 @@ function BVHNode:center_z()
 end
 
 function BVHNode:clear()
-	self._start_index =  0
-	self._end_index   = -1
+	self._start_index = 0
+	self._end_index = -1
 end
 
 function BVHNode.ngSphereRadius(extentsMin, extentsMax)
@@ -408,23 +406,25 @@ function BVHNode.ngSphereRadius(extentsMin, extentsMax)
 	local center_y = (extentsMin.y + extentsMax.y) * 0.5
 	local center_z = (extentsMin.z + extentsMax.z) * 0.5
 
-	local extentsMinDistSqr =
-		(center_x - extentsMin.x) * (center_x - extentsMin.x) +
-		(center_y - extentsMin.y) * (center_y - extentsMin.y) +
-		(center_z - extentsMin.z) * (center_z - extentsMin.z)
+	local extentsMinDistSqr = (center_x - extentsMin.x) * (center_x - extentsMin.x)
+		+ (center_y - extentsMin.y) * (center_y - extentsMin.y)
+		+ (center_z - extentsMin.z) * (center_z - extentsMin.z)
 
-	local extentsMaxDistSqr =
-		(center_x - extentsMax.x) * (center_x - extentsMax.x) +
-		(center_y - extentsMax.y) * (center_y - extentsMax.y) +
-		(center_z - extentsMax.z) * (center_z - extentsMax.z)
+	local extentsMaxDistSqr = (center_x - extentsMax.x) * (center_x - extentsMax.x)
+		+ (center_y - extentsMax.y) * (center_y - extentsMax.y)
+		+ (center_z - extentsMax.z) * (center_z - extentsMax.z)
 
 	return math.sqrt(math.max(extentsMinDistSqr, extentsMaxDistSqr))
 end
 
 Node = setmetatable({}, {
-	__call = function(_, ...) return new_node(...) end
+	__call = function(_, ...)
+		return new_node(...)
+	end,
 })
 
 return setmetatable({}, {
-	__call = function(_, ...) return new(...) end
+	__call = function(_, ...)
+		return new(...)
+	end,
 })

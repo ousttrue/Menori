@@ -7,7 +7,7 @@
 -------------------------------------------------------------------------------
 ]]
 
-local menori = require 'menori'
+local menori = require("menori")
 
 local ml = menori.ml
 local vec3 = ml.vec3
@@ -15,41 +15,41 @@ local quat = ml.quat
 local ml_utils = ml.utils
 
 local tips = {
-	{ text = "Debug BVH (press Q): ", key = 'q', boolean = true },
+	{ text = "Debug BVH (press Q): ", key = "q", boolean = true },
 }
 
-local scene = menori.Scene:extend('raycast_bvh_scene')
+local scene = menori.Scene:extend("raycast_bvh_scene")
 
 local function debug_bvh(tree, aabb_root)
-	local nodes = {tree.root_node}
-      while #nodes > 0 do
-            local node = table.remove(nodes)
-            if node:element_count() > 0 then
+	local nodes = { tree.root_node }
+	while #nodes > 0 do
+		local node = table.remove(nodes)
+		if node:element_count() > 0 then
 			local size = node.extents:size()
 			local boxshape = menori.BoxShape(size.x, size.y, size.z)
 			local material = menori.Material()
 			material.wireframe = true
-			material.mesh_cull_mode = 'none'
-			material.alpha_mode = 'BLEND'
-			material:set('baseColor', {1.0, 1.0, 1.0, 1.0})
+			material.mesh_cull_mode = "none"
+			material.alpha_mode = "BLEND"
+			material:set("baseColor", { 1.0, 1.0, 1.0, 1.0 })
 			local t = menori.ModelNode(boxshape, material)
 			t:set_position(node.extents:center())
 			aabb_root:attach(t)
-            end
-            if node._node0 then
-                  nodes[#nodes+1] = node._node0
-            end
-            if node._node1 then
-                  nodes[#nodes+1] = node._node1
-            end
-      end
+		end
+		if node._node0 then
+			nodes[#nodes + 1] = node._node0
+		end
+		if node._node1 then
+			nodes[#nodes + 1] = node._node1
+		end
+	end
 end
 
 function scene:init()
 	scene.super.init(self)
 
 	local _, _, w, h = menori.app:get_viewport()
-	self.camera = menori.PerspectiveCamera(60, w/h, 0.5, 1024)
+	self.camera = menori.PerspectiveCamera(60, w / h, 0.5, 1024)
 	self.environment = menori.Environment(self.camera)
 
 	self.root_node = menori.Node()
@@ -57,14 +57,14 @@ function scene:init()
 
 	local boxshape = menori.BoxShape(0.2, 0.2, 0.2)
 	local material = menori.Material()
-	material:set('baseColor', {1.0, 1.0, 0.0, 1.0})
+	material:set("baseColor", { 1.0, 1.0, 0.0, 1.0 })
 	self.box = menori.ModelNode(boxshape, material)
 	self.root_node:attach(self.box)
 
-	local gltf = menori.glTFLoader.load('examples/assets/pokemon_firered_-_players_room.glb')
-	local scenes = menori.NodeTreeBuilder.create(gltf, function (scene, builder)
+	local gltf = menori.glTFLoader.load("examples/assets/pokemon_firered_-_players_room.glb")
+	local scenes = menori.NodeTreeBuilder.create(gltf, function(scene, builder)
 		-- Create BVH for each mesh node.
-		scene:traverse(function (node)
+		scene:traverse(function(node)
 			if node.mesh then
 				node.bvh = ml.bvh(node.mesh, 10, node.world_matrix)
 				debug_bvh(node.bvh, self.aabb_root)
@@ -85,14 +85,14 @@ function scene:render()
 	-- Recursively draw all the nodes that were attached to the root node.
 	-- Sorting nodes by transparency.
 	self:render_nodes(self.root_node, self.environment, {
-		node_sort_comp = menori.Scene.alpha_mode_comp
+		node_sort_comp = menori.Scene.alpha_mode_comp,
 	})
 
 	love.graphics.setColor(1, 0.1, 0.2, 0.5)
 
 	-- Convert the position of the box from world coordinates to screen coordinates and draw a circle.
 	local screen_space_pos = self.camera:world_to_screen_point(self.box:get_world_position())
-	love.graphics.circle('line', screen_space_pos.x, screen_space_pos.y, 32)
+	love.graphics.circle("line", screen_space_pos.x, screen_space_pos.y, 32)
 
 	-- Draw tips on the screen.
 	love.graphics.setColor(1, 0.5, 0, 1)
@@ -101,8 +101,8 @@ function scene:render()
 		love.graphics.print(v.text .. (v.boolean and "On" or "Off"), 10, y)
 		y = y + 15
 	end
-	love.graphics.print("Click the left mouse button to place the box.", 10, y+0)
-	love.graphics.print("Hold the right mouse button to rotate the camera.", 10, y+40)
+	love.graphics.print("Click the left mouse button to place the box.", 10, y + 0)
+	love.graphics.print("Hold the right mouse button to rotate the camera.", 10, y + 40)
 end
 
 function scene:update_camera()
@@ -112,7 +112,7 @@ function scene:update_camera()
 	self.camera.eye = q + v
 	self.camera:update_view_matrix()
 
-	self.environment:set_vector('view_position', self.camera.eye)
+	self.environment:set_vector("view_position", self.camera.eye)
 end
 
 function scene:mousepressed(x, y, button, istouch, presses)
@@ -123,7 +123,7 @@ function scene:mousepressed(x, y, button, istouch, presses)
 		local r = love.math.random()
 		local g = love.math.random()
 		local b = love.math.random()
-		material:set('baseColor', {r, g, b, 1.0})
+		material:set("baseColor", { r, g, b, 1.0 })
 		self.box = menori.ModelNode(boxshape, material)
 		self.root_node:attach(self.box)
 	end
@@ -152,7 +152,7 @@ function scene:update()
 
 	-- Check the intersection of the ray with each node-mesh containing the BVH.
 	local intersect_list = {}
-	self.root_node:traverse(function (node)
+	self.root_node:traverse(function(node)
 		if node.bvh then
 			local t = node.bvh:intersect_ray(ray)
 			if #t > 0 then
@@ -162,7 +162,7 @@ function scene:update()
 	end)
 
 	-- Sorted by distance.
-	table.sort(intersect_list, function (a, b)
+	table.sort(intersect_list, function(a, b)
 		return a.distance < b.distance
 	end)
 

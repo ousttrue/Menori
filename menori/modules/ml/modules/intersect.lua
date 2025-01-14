@@ -14,8 +14,8 @@ menori.ml.intersect
 ]]
 -- @classmod intersect
 
-local modules = (...):gsub('%.[^%.]+$', '') .. "."
-local vec3 = require (modules .. "vec3")
+local modules = (...):gsub("%.[^%.]+$", "") .. "."
+local vec3 = require(modules .. "vec3")
 
 local DBL_EPSILON = 2.2204460492503131e-16
 
@@ -77,10 +77,10 @@ function intersect.ray_triangle(ray, triangle, backface_cull)
 	-- return rayhit (point, distance, triangle normal)
 	if t >= DBL_EPSILON then
 		return {
-                  point = h:set(ray.direction):scale(t):add(h, ray.position),
-                  distance = t,
-                  normal = vec3.cross(e1, e2):normalize(),
-            }
+			point = h:set(ray.direction):scale(t):add(h, ray.position),
+			distance = t,
+			normal = vec3.cross(e1, e2):normalize(),
+		}
 	end
 
 	-- ray does not intersect triangle
@@ -88,13 +88,12 @@ function intersect.ray_triangle(ray, triangle, backface_cull)
 end
 
 function intersect.aabb_aabb(a, b)
-	return
-		a.min.x <= b.max.x and
-		a.max.x >= b.min.x and
-		a.min.y <= b.max.y and
-		a.max.y >= b.min.y and
-		a.min.z <= b.max.z and
-		a.max.z >= b.min.z
+	return a.min.x <= b.max.x
+		and a.max.x >= b.min.x
+		and a.min.y <= b.max.y
+		and a.max.y >= b.min.y
+		and a.min.z <= b.max.z
+		and a.max.z >= b.min.z
 end
 
 return intersect
