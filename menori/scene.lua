@@ -13,10 +13,6 @@ You need to inherit from the Scene class to create your own scene object.
 ]]
 --- @classmod Scene
 
-local class = require("menori.libs.class")
-
-local lovg = love.graphics
-
 local node_stack_t = {}
 
 local temp_renderstates = { clear = false }
@@ -34,15 +30,21 @@ local function default_filter(node, scene, environment)
 	node:render(scene, environment)
 end
 
-local scene = class("Scene")
+---@class menori.Scene
+---@field list_drawable_nodes table
+---@field transparent_flag boolean
+local Scene = {
+	alpha_mode_comp = alpha_mode_comp,
+	layer_comp = layer_comp,
+}
+Scene.__index = Scene
 
-scene.alpha_mode_comp = alpha_mode_comp
-scene.layer_comp = layer_comp
-
---- The public constructor.
-function scene:init()
+---@return menori.Scene
+function Scene.new()
+	local self = setmetatable({}, Scene)
 	self.list_drawable_nodes = {}
 	self.transparent_flag = false
+	return self
 end
 
 --- Node render function.
@@ -52,10 +54,10 @@ end
 -- @tparam[opt] function filter The callback function.
 -- @usage renderstates = { canvas, ..., clear = true, colors = {color, ...} }
 -- @usage function default_filter(node, scene, environment) node:render(scene, environment) end
-function scene:render_nodes(node, environment, renderstates, filter)
-	assert(node, "in function 'scene:render_nodes' node does not exist.")
+function Scene:render_nodes(node, environment, renderstates, filter)
+	assert(node, "in function 'Scene:render_nodes' node does not exist.")
 
-	lovg.push("all")
+	love.graphics.push("all")
 
 	environment._shader_object_cache = nil
 	renderstates = renderstates or temp_renderstates
@@ -97,21 +99,21 @@ function scene:render_nodes(node, environment, renderstates, filter)
 	local canvases = #renderstates > 0
 
 	if canvases then
-		lovg.setCanvas(renderstates)
+		love.graphics.setCanvas(renderstates)
 	end
 
 	if renderstates.clear then
 		if renderstates.colors then
-			lovg.clear(unpack(renderstates.colors))
+			love.graphics.clear(unpack(renderstates.colors))
 		else
-			lovg.clear()
+			love.graphics.clear()
 		end
 	end
 
 	for _, v in ipairs(self.list_drawable_nodes) do
 		filter(v, self, environment)
 	end
-	lovg.pop()
+	love.graphics.pop()
 
 	local count = #self.list_drawable_nodes
 	self.list_drawable_nodes = {}
@@ -122,8 +124,8 @@ end
 --- Node update function.
 --@tparam Node node
 --@tparam Environment environment
-function scene:update_nodes(node, environment)
-	assert(node, "in function 'scene:update_nodes' node does not exist.")
+function Scene:update_nodes(node, environment)
+	assert(node, "in function 'Scene:update_nodes' node does not exist.")
 
 	table.insert(node_stack_t, node)
 	while #node_stack_t > 0 do
@@ -148,12 +150,12 @@ function scene:update_nodes(node, environment)
 	end
 end
 
-function scene:render() end
+function Scene:render() end
 
-function scene:update() end
+function Scene:update() end
 
-function scene:on_enter() end
+function Scene:on_enter() end
 
-function scene:on_leave() end
+function Scene:on_leave() end
 
-return scene
+return Scene

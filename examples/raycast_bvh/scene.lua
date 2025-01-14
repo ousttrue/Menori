@@ -18,7 +18,10 @@ local tips = {
 	{ text = "Debug BVH (press Q): ", key = "q", boolean = true },
 }
 
-local scene = menori.Scene:extend("raycast_bvh_scene")
+---@class RaycastBvhScene
+local RaycastBvhScene = {}
+RaycastBvhScene.__index = RaycastBvhScene
+setmetatable(RaycastBvhScene, menori.Scene)
 
 local function debug_bvh(tree, aabb_root)
 	local nodes = { tree.root_node }
@@ -45,8 +48,9 @@ local function debug_bvh(tree, aabb_root)
 	end
 end
 
-function scene:init()
-	scene.super.init(self)
+---@return RaycastBvhScene
+function RaycastBvhScene.new()
+	local self = setmetatable(menori.Scene.new(), RaycastBvhScene)
 
 	local _, _, w, h = menori.app:get_viewport()
 	self.camera = menori.PerspectiveCamera.new(60, w / h, 0.5, 1024)
@@ -77,9 +81,11 @@ function scene:init()
 	self.x_angle = 0
 	self.y_angle = -30
 	self.view_scale = 10
+
+	return self
 end
 
-function scene:render()
+function RaycastBvhScene:render()
 	love.graphics.clear(0.3, 0.25, 0.2)
 
 	-- Recursively draw all the nodes that were attached to the root node.
@@ -105,7 +111,7 @@ function scene:render()
 	love.graphics.print("Hold the right mouse button to rotate the camera.", 10, y + 40)
 end
 
-function scene:update_camera()
+function RaycastBvhScene:update_camera()
 	local q = quat.from_euler_angles(0, math.rad(self.x_angle), math.rad(self.y_angle)) * vec3.unit_z * self.view_scale
 	local v = vec3(0, 0.5, 0)
 	self.camera.center = v
@@ -115,7 +121,7 @@ function scene:update_camera()
 	self.environment:set_vector("view_position", self.camera.eye)
 end
 
-function scene:mousepressed(x, y, button, istouch, presses)
+function RaycastBvhScene:mousepressed(x, y, button, istouch, presses)
 	-- Placing the box at the last intersection point with the mesh.
 	if button == 1 and self.box.render_flag then
 		local boxshape = menori.BoxShape(0.2, 0.2, 0.2)
@@ -130,7 +136,7 @@ function scene:mousepressed(x, y, button, istouch, presses)
 end
 
 -- camera control
-function scene:mousemoved(x, y, dx, dy)
+function RaycastBvhScene:mousemoved(x, y, dx, dy)
 	if love.mouse.isDown(2) then
 		self.y_angle = self.y_angle - dy * 0.2
 		self.x_angle = self.x_angle - dx * 0.2
@@ -138,11 +144,11 @@ function scene:mousemoved(x, y, dx, dy)
 	end
 end
 
-function scene:wheelmoved(x, y)
+function RaycastBvhScene:wheelmoved(x, y)
 	self.view_scale = self.view_scale - y * 0.2
 end
 
-function scene:update()
+function RaycastBvhScene:update()
 	self:update_camera()
 	self:update_nodes(self.root_node, self.environment)
 
@@ -178,7 +184,7 @@ function scene:update()
 	self.aabb_root.render_flag = tips[1].boolean
 end
 
-function scene:keyreleased(key)
+function RaycastBvhScene:keyreleased(key)
 	for _, v in ipairs(tips) do
 		if key == v.key then
 			v.boolean = not v.boolean
@@ -186,4 +192,4 @@ function scene:keyreleased(key)
 	end
 end
 
-return scene
+return RaycastBvhScene

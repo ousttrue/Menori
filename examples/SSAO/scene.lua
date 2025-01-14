@@ -57,10 +57,14 @@ local function init_ssao_shader()
 	return ssao_shader
 end
 
-local scene = menori.Scene:extend("SSAO_scene")
+---@class SsaoScene: menori.Scene
+local SsaoScene = {}
+SsaoScene.__index = SsaoScene
+setmetatable(SsaoScene, menori.Scene)
 
-function scene:init()
-	scene.super.init(self)
+---@return SsaoScene
+function SsaoScene.new()
+	local self = setmetatable(menori.Scene.new(), SsaoScene)
 
 	local _, _, w, h = menori.app:get_viewport()
 	self.ssao_c = love.graphics.newCanvas(w, h)
@@ -112,6 +116,8 @@ function scene:init()
 	-- flip Y when draw in canvas
 	self.temp_inv_projection_m[6] = -self.temp_inv_projection_m[6]
 	self.temp_projection_m[6] = -self.temp_projection_m[6]
+
+	return self
 end
 
 local tips = {
@@ -121,7 +127,7 @@ local tips = {
 	{ text = "Only draw SSAO (press V): ", key = "v", boolean = false },
 }
 
-function scene:render()
+function SsaoScene:render()
 	love.graphics.clear(0.3, 0.25, 0.2)
 
 	--draw scene in canvases [albedo_c, normal_c], depthstencil = depth24_c
@@ -188,7 +194,7 @@ function scene:render()
 	love.graphics.setColor(1, 1, 1, 1)
 end
 
-function scene:keyreleased(key)
+function SsaoScene:keyreleased(key)
 	for _, v in ipairs(tips) do
 		if key == v.key then
 			v.boolean = not v.boolean
@@ -197,7 +203,7 @@ function scene:keyreleased(key)
 end
 
 -- camera control
-function scene:mousemoved(x, y, dx, dy)
+function SsaoScene:mousemoved(x, y, dx, dy)
 	if love.mouse.isDown(2) then
 		self.y_angle = self.y_angle - dy * 0.2
 		self.x_angle = self.x_angle - dx * 0.2
@@ -205,11 +211,11 @@ function scene:mousemoved(x, y, dx, dy)
 	end
 end
 
-function scene:wheelmoved(x, y)
+function SsaoScene:wheelmoved(x, y)
 	self.view_scale = self.view_scale - y * 0.2
 end
 
-function scene:update(dt)
+function SsaoScene:update(dt)
 	self:update_nodes(self.root_node, self.environment)
 
 	if love.keyboard.isDown("q") then
@@ -227,4 +233,4 @@ function scene:update(dt)
 	self.camera:update_view_matrix()
 end
 
-return scene
+return SsaoScene

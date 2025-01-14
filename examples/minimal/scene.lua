@@ -13,11 +13,14 @@ local ml = menori.ml
 local vec3 = ml.vec3
 local quat = ml.quat
 
---class inherited from Scene.
-local scene = menori.Scene:extend("minimal_scene")
+---@class MinimalScene: menori.Scene
+local MinimalScene = {}
+MinimalScene.__index = MinimalScene
+setmetatable(MinimalScene, menori.Scene)
 
-function scene:init()
-	scene.super.init(self)
+---@return MinimalScene
+function MinimalScene:new()
+	local self = setmetatable(menori.Scene.new(), MinimalScene)
 
 	local _, _, w, h = menori.app:get_viewport()
 	self.camera = menori.PerspectiveCamera.new(60, w / h, 0.5, 1024)
@@ -36,9 +39,11 @@ function scene:init()
 	-- adding scene to the root node.
 	self.root_node:attach(scenes[1])
 	self.angle = 0
+
+	return self
 end
 
-function scene:render()
+function MinimalScene:render()
 	love.graphics.clear(0.3, 0.25, 0.2)
 	-- recursively draw the scene nodes
 	self:render_nodes(self.root_node, self.environment, {
@@ -46,7 +51,7 @@ function scene:render()
 	})
 end
 
-function scene:update(dt)
+function MinimalScene:update(dt)
 	-- recursively update the scene nodes
 	self:update_nodes(self.root_node, self.environment)
 	self.angle = self.angle + 0.25
@@ -62,4 +67,4 @@ function scene:update(dt)
 	self.animations:update(dt)
 end
 
-return scene
+return MinimalScene

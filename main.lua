@@ -9,8 +9,9 @@ local example_list = {
 	{ title = "RaycastBVH", path = "examples.raycast_bvh.scene" },
 }
 for _, v in ipairs(example_list) do
-	local Scene = require(v.path)
-	menori.app:add_scene(v.title, Scene())
+	---@type menori.Scene
+	local scene = require(v.path).new()
+	menori.app:add_scene(v.title, scene)
 end
 menori.app:set_scene("Minimal")
 

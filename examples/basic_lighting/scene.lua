@@ -28,10 +28,14 @@ function PointLight:init(x, y, z, r, g, b)
 	self:set("specular", { r, g, b })
 end
 
-local scene = menori.Scene:extend("basic_lighting_scene")
+---@class BasicLightingScene: menori.Scene
+local BasicLightingScene = {}
+BasicLightingScene.__index = BasicLightingScene
+setmetatable(BasicLightingScene, menori.Scene)
 
-function scene:init()
-	scene.super.init(self)
+---@return BasicLightingScene
+function BasicLightingScene.new()
+	local self = setmetatable(menori.Scene.new(), BasicLightingScene)
 
 	local _, _, w, h = menori.app:get_viewport()
 	self.camera = menori.PerspectiveCamera.new(60, w / h, 0.5, 1024)
@@ -77,9 +81,11 @@ function scene:init()
 	self.x_angle = 0
 	self.y_angle = -30
 	self.view_scale = 10
+
+	return self
 end
 
-function scene:render()
+function BasicLightingScene:render()
 	love.graphics.clear(0.3, 0.25, 0.2)
 
 	-- Recursively draw all the nodes that were attached to the root node.
@@ -89,7 +95,7 @@ function scene:render()
 	})
 end
 
-function scene:update_camera()
+function BasicLightingScene:update_camera()
 	local q = quat.from_euler_angles(0, math.rad(self.x_angle), math.rad(self.y_angle)) * vec3.unit_z * self.view_scale
 	local v = vec3(0, 0.5, 0)
 	self.camera.center = v
@@ -100,7 +106,7 @@ function scene:update_camera()
 end
 
 -- camera control
-function scene:mousemoved(x, y, dx, dy)
+function BasicLightingScene:mousemoved(x, y, dx, dy)
 	if love.mouse.isDown(2) then
 		self.y_angle = self.y_angle - dy * 0.2
 		self.x_angle = self.x_angle - dx * 0.2
@@ -108,13 +114,13 @@ function scene:mousemoved(x, y, dx, dy)
 	end
 end
 
-function scene:wheelmoved(x, y)
+function BasicLightingScene:wheelmoved(x, y)
 	self.view_scale = self.view_scale - y * 0.2
 end
 
-function scene:update()
+function BasicLightingScene:update()
 	self:update_camera()
 	self:update_nodes(self.root_node, self.environment)
 end
 
-return scene
+return BasicLightingScene
