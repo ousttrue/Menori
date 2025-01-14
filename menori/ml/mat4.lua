@@ -28,6 +28,7 @@ if ffi then
 	bytesize = ffi.sizeof("float[16]")
 end
 
+---@class menori.mat4
 local mat4 = {}
 local mat4_mt = {}
 mat4_mt.__index = mat4_mt

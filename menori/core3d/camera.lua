@@ -11,7 +11,6 @@ Perspective camera class.
 ]]
 -- @classmod PerspectiveCamera
 
-local class = require("menori.libs.class")
 local ml = require("menori.ml")
 local app = require("menori.deprecated.app")
 
@@ -20,19 +19,28 @@ local vec2 = ml.vec2
 local vec3 = ml.vec3
 local vec4 = ml.vec4
 
-local PerspectiveCamera = class("PerspectiveCamera")
+---@class menori.PerspectiveCamera
+---@field m_projection menori.mat4 Projection matrix.
+---@field m_inv_projection menori.mat4  Inverse projection matrix.
+---@field m_view menori.mat4  View matrix.
+---@field center menori.vec3  Position where the camera is looking at.
+---@field eye menori.vec3  Position of the camera.
+---@field up menori.vec3  Normalized up vector, how the camera is oriented.
+local PerspectiveCamera = {}
+PerspectiveCamera.__index = PerspectiveCamera
 
-----
--- The public constructor.
--- @tparam number fov Field of view of the Camera, in degrees.
--- @tparam number aspect The aspect ratio.
--- @tparam number nclip The distance of the near clipping plane from the the Camera.
--- @tparam number fclip The distance of the far clipping plane from the Camera.
-function PerspectiveCamera:init(fov, aspect, nclip, fclip)
+---@param fov number Field of view of the Camera, in degrees.
+---@param aspect number The aspect ratio.
+---@param nclip number The distance of the near clipping plane from the the Camera.
+---@param fclip number The distance of the far clipping plane from the Camera.
+---@return menori.PerspectiveCamera
+function PerspectiveCamera.new(fov, aspect, nclip, fclip)
 	fov = fov or 60
 	aspect = aspect or 1.6666667
 	nclip = nclip or 0.1
 	fclip = fclip or 2048.0
+
+	local self = setmetatable({}, PerspectiveCamera)
 
 	self.m_projection = mat4():perspective_RH_NO(fov, aspect, nclip, fclip)
 	self.m_inv_projection = self.m_projection:clone():inverse()
@@ -41,6 +49,8 @@ function PerspectiveCamera:init(fov, aspect, nclip, fclip)
 	self.eye = vec3(0, 0, 0)
 	self.center = vec3(0, 0, 1)
 	self.up = vec3(0, 1, 0)
+
+	return self
 end
 
 ----
@@ -108,27 +118,3 @@ function PerspectiveCamera:get_direction()
 end
 
 return PerspectiveCamera
-
----
--- Projection matrix.
--- @tfield mat4 m_projection
-
----
--- Inverse projection matrix.
--- @tfield mat4 m_inv_projection
-
----
--- View matrix.
--- @tfield[readonly] mat4 m_view
-
----
--- Position where the camera is looking at.
--- @tfield vec3 center
-
----
--- Position of the camera.
--- @tfield vec3 eye
-
----
--- Normalized up vector, how the camera is oriented.
--- @tfield vec3 up

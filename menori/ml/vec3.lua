@@ -15,6 +15,7 @@ menori.ml.vec3
 
 local utils = require("menori.ml.utils")
 
+---@class menori.vec3
 local vec3 = {}
 local vec3_mt = {}
 vec3_mt.__index = vec3_mt

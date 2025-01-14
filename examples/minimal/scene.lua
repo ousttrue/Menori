@@ -20,7 +20,7 @@ function scene:init()
 	scene.super.init(self)
 
 	local _, _, w, h = menori.app:get_viewport()
-	self.camera = menori.PerspectiveCamera(60, w / h, 0.5, 1024)
+	self.camera = menori.PerspectiveCamera.new(60, w / h, 0.5, 1024)
 	self.environment = menori.Environment(self.camera)
 
 	self.root_node = menori.Node()
