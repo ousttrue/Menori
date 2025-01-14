@@ -1,3 +1,4 @@
+require("lldebugger").start()
 local menori = require 'menori'
 
 local scene_iterator = 1
