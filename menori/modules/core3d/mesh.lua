@@ -28,9 +28,9 @@ local default_template = {1, 2, 3, 2, 4, 3}
 local vertexformat
 if love._version_major > 11 then
       vertexformat = {
-            {format = "floatvec3", name = "VertexPosition"},
-            {format = "floatvec2", name = "VertexTexCoord"},
-            {format = "floatvec3", name = "VertexNormal"  },
+            {format = "floatvec3", name = "VertexPosition", location=0},
+            {format = "floatvec2", name = "VertexTexCoord", location=1},
+            {format = "floatvec3", name = "VertexNormal", location=3},
       }
 else
       vertexformat = {

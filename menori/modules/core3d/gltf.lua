@@ -56,6 +56,16 @@ local component_types = {
 	[5126] = 'float',
 }
 
+local location_map = {
+	VertexPosition = 0,
+	VertexTexCoord = 1,
+	VertexColor = 2,
+	VertexNormal = 3,
+	VertexJoints = 5,
+	VertexWeights = 4,
+	VertexTangent = 6,
+}
+
 local add_vertex_format
 if love._version_major > 11 then
 	local types = {
@@ -69,8 +79,10 @@ if love._version_major > 11 then
 	}
 	function add_vertex_format(vertexformat, attribute_name, buffer)
 		local format = component_types[buffer.component_type] .. types[buffer.type]
+		local location = location_map[attribute_name]
+		assert(type(location)=='number')
 		table.insert(vertexformat, {
-			name = attribute_name, format = format
+			name = attribute_name, format = format, location = location
 		})
 	end
 else

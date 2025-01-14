@@ -17,8 +17,8 @@ local Mesh = require (modules .. 'core3d.mesh')
 local vertexformat
 if love._version_major > 11 then
 	vertexformat = {
-		{format = "floatvec3", name = "VertexPosition"},
-		{format = "floatvec4", name = "VertexColor"},
+		{format = "floatvec3", name = "VertexPosition", location=0},
+		{format = "floatvec4", name = "VertexColor", location=1},
 	}
 else
 	vertexformat = {
