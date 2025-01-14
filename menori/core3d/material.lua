@@ -17,18 +17,19 @@ local UniformList = require("menori.core3d.uniform_list")
 
 local ShaderUtils = require("menori.shaders.utils")
 
-local Material = UniformList:extend("Material", {
+---@class menori.Material
+local Material = {
 	clone = utils.copy,
-})
+}
+Material.__index = Material
+setmetatable(Material, UniformList)
 
 Material.default_shader = ShaderUtils.shaders["default_mesh"]
 
-----
--- The public constructor.
--- @tparam string name Name of the material.
--- @param[opt=Material.default_shader] shader [LOVE Shader](https://love2d.org/wiki/Shader)
-function Material:init(name, shader)
-	Material.super.init(self)
+---@param name string? Name of the material.
+---@param shader love.Shader? [opt=Material.default_shader] shader [LOVE Shader](https://love2d.org/wiki/Shader)
+function Material.new(name, shader)
+	local self = setmetatable(UniformList.new(), Material)
 
 	self.name = name
 	self.shader = shader or Material.default_shader
@@ -41,9 +42,11 @@ function Material:init(name, shader)
 
 	self.alpha_mode = "OPAQUE"
 	self.main_texture = nil
+
+	return self
 end
 
-Material.default = Material("Default")
+Material.default = Material.new("Default")
 Material.default:set("baseColor", { 1, 1, 1, 1 })
 return Material
 

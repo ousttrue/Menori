@@ -16,21 +16,28 @@ local utils = require("menori.libs.utils")
 local UniformList = require("menori.core3d.uniform_list")
 local ml = require("menori.ml")
 
-local Environment = UniformList:extend("Environment")
+---@class menori.Environment: UniformList
+---@field camera menori.PerspectiveCamera
+local Environment = {}
+Environment.__index = Environment
+setmetatable(Environment, UniformList)
 
 local temp_projection_m = ml.mat4()
 local temp_int_view_m = ml.mat4()
 
 ----
 -- The public constructor.
--- @param camera Camera that will be associated with this environment.
-function Environment:init(camera)
-	Environment.super.init(self)
+---@param camera menori.PerspectiveCamera that will be associated with this environment.
+---@return menori.Environment
+function Environment.new(camera)
+	local self = setmetatable(UniformList.new(), Environment)
 
 	self.camera = camera
 	self.lights = {}
 
 	self._shader_object_cache = nil
+
+	return self
 end
 
 ----

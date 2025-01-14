@@ -91,7 +91,7 @@ function SsaoScene.new()
 	self.ssao_blur_shader = love.graphics.newShader("examples/SSAO/ssao_blur.glsl")
 
 	self.camera = menori.PerspectiveCamera.new(60, w / h, 0.1, 1024)
-	self.environment = menori.Environment(self.camera)
+	self.environment = menori.Environment.new(self.camera)
 
 	self.root_node = menori.Node()
 

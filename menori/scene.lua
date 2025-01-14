@@ -33,6 +33,8 @@ end
 ---@class menori.Scene
 ---@field list_drawable_nodes table
 ---@field transparent_flag boolean
+---@field camera menori.PerspectiveCamera
+---@field environment menori.Environment
 local Scene = {
 	alpha_mode_comp = alpha_mode_comp,
 	layer_comp = layer_comp,

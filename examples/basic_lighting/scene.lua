@@ -14,11 +14,15 @@ local vec3 = ml.vec3
 local quat = ml.quat
 local ml_utils = ml.utils
 
--- class inherited from UniformList for a light source.
-local PointLight = menori.UniformList:extend("PointLight")
-function PointLight:init(x, y, z, r, g, b)
-	PointLight.super.init(self)
+---@class PointLight: menori.UniformList
+---@field position [number, number, number]
+local PointLight = {}
+PointLight.__index = PointLight
+setmetatable(PointLight, menori.UniformList)
 
+---@return PointLight
+function PointLight.new(x, y, z, r, g, b)
+	local self = setmetatable(menori.UniformList.new(), PointLight)
 	self:set("position", { x, y, z })
 	self:set("constant", 1.0)
 	self:set("linear", 0.3)
@@ -26,6 +30,7 @@ function PointLight:init(x, y, z, r, g, b)
 	self:set("ambient", { r, g, b })
 	self:set("diffuse", { r, g, b })
 	self:set("specular", { r, g, b })
+	return self
 end
 
 ---@class BasicLightingScene: menori.Scene
@@ -39,11 +44,11 @@ function BasicLightingScene.new()
 
 	local _, _, w, h = menori.app:get_viewport()
 	self.camera = menori.PerspectiveCamera.new(60, w / h, 0.5, 1024)
-	self.environment = menori.Environment(self.camera)
+	self.environment = menori.Environment.new(self.camera)
 
 	-- adding light sources
-	self.environment:add_light("point_lights", PointLight(0, 0.5, 2, 0.8, 0.3, 0.1))
-	self.environment:add_light("point_lights", PointLight(2, 1, -1, 0.1, 0.3, 0.8))
+	self.environment:add_light("point_lights", PointLight.new(0, 0.5, 2, 0.8, 0.3, 0.1))
+	self.environment:add_light("point_lights", PointLight.new(2, 1, -1, 0.1, 0.3, 0.8))
 
 	self.root_node = menori.Node()
 	self.aabb_root = self.root_node:attach(menori.Node())

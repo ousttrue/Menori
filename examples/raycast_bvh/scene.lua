@@ -30,7 +30,7 @@ local function debug_bvh(tree, aabb_root)
 		if node:element_count() > 0 then
 			local size = node.extents:size()
 			local boxshape = menori.BoxShape(size.x, size.y, size.z)
-			local material = menori.Material()
+			local material = menori.Material.new()
 			material.wireframe = true
 			material.mesh_cull_mode = "none"
 			material.alpha_mode = "BLEND"
@@ -54,13 +54,13 @@ function RaycastBvhScene.new()
 
 	local _, _, w, h = menori.app:get_viewport()
 	self.camera = menori.PerspectiveCamera.new(60, w / h, 0.5, 1024)
-	self.environment = menori.Environment(self.camera)
+	self.environment = menori.Environment.new(self.camera)
 
 	self.root_node = menori.Node()
 	self.aabb_root = self.root_node:attach(menori.Node())
 
 	local boxshape = menori.BoxShape(0.2, 0.2, 0.2)
-	local material = menori.Material()
+	local material = menori.Material.new()
 	material:set("baseColor", { 1.0, 1.0, 0.0, 1.0 })
 	self.box = menori.ModelNode(boxshape, material)
 	self.root_node:attach(self.box)

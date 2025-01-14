@@ -114,7 +114,7 @@ function NodeTreeBuilder.create(gltf, callback)
 	end
 
 	for i, v in ipairs(gltf.materials) do
-		local material = Material(v.name)
+		local material = Material.new(v.name)
 		material.mesh_cull_mode = v.double_sided and "none" or "back"
 		material.alpha_mode = v.alpha_mode
 		material.alpha_cutoff = v.alpha_cutoff

@@ -11,9 +11,9 @@ A class that stores a list of Uniform variables and implements their sending to 
 ]]
 --- @classmod UniformList
 
-local class = require("menori.libs.class")
-
-local UniformList = class("UniformList")
+---@class menori.UniformList
+local UniformList = {}
+UniformList.__index = UniformList
 
 local uniform_types = {
 	[1] = "any",
@@ -39,9 +39,12 @@ local function locate_uniform(list, name, constant, type)
 	return uniform
 end
 
---- The public constructor.
-function UniformList:init()
-	self.list = {}
+---@return menori.UniformList
+function UniformList.new()
+	local self = setmetatable({
+		list = {},
+	}, UniformList)
+	return self
 end
 
 --- Set one or more any type values into uniform list.
