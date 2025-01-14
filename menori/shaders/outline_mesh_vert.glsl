@@ -5,9 +5,9 @@ uniform mat4 m_model;
 uniform mat4 m_view;
 uniform mat4 m_projection;
 
-attribute vec3 VertexNormal;
-attribute vec4 VertexJoints;
-attribute vec4 VertexWeights;
+layout (location = 3) in vec3 VertexNormal;
+layout (location = 5) in vec4 VertexJoints;
+layout (location = 4) in vec4 VertexWeights;
 
 #menori_include <transpose.glsl>
 #menori_include <inverse.glsl>

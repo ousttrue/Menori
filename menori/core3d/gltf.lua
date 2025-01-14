@@ -64,8 +64,8 @@ local location_map = {
 	VertexTexCoord = 1,
 	VertexColor = 2,
 	VertexNormal = 3,
-	VertexJoints = 5,
 	VertexWeights = 4,
+	VertexJoints = 5,
 	VertexTangent = 6,
 }
 

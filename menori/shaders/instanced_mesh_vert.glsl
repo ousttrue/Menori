@@ -9,8 +9,8 @@ uniform mat4 m_view;
 uniform mat4 m_projection;
 uniform mat4 m_model;
 
-attribute vec3 VertexNormal;
-attribute vec3 instance_position;
+layout (location = 3) in vec3 VertexNormal;
+layout (location = 6) in vec3 instance_position;
 
 vec4 position(mat4 transform_projection, vec4 vertex_position) {
       vec3 vert_normal = VertexNormal;
