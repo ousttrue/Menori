@@ -20,7 +20,10 @@ local ffi = require("menori.libs.ffi")
 local vec3 = ml.vec3
 local bound3 = ml.bound3
 
-local ModelNode = Node:extend("ModelNode")
+---@class menori.ModelNode
+local ModelNode = {}
+ModelNode.__index = ModelNode
+setmetatable(ModelNode, Node)
 
 local matrix_bytesize = 16 * 4
 local data
@@ -29,13 +32,14 @@ local joints_texture
 --- The public constructor.
 -- @tparam menori.Mesh mesh object
 -- @tparam[opt=Material.default] menori.Material material object. (A new copy will be created for the material)
-function ModelNode:init(mesh, material)
-	ModelNode.super.init(self)
+---@return menori.ModelNode
+function ModelNode.new(mesh, material)
+	local self = setmetatable(Node.new(), ModelNode)
 	material = material or Material.default
 	self.material = material:clone()
 	self.mesh = mesh
-
 	self.color = ml.vec4(1)
+	return self
 end
 
 --- Clone an object.

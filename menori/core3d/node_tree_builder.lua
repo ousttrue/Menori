@@ -51,7 +51,7 @@ local function create_nodes(builder, nodes, i)
 			if m.material_index then
 				material = builder.materials[m.material_index + 1]
 			end
-			local model_node = ModelNode(m, material)
+			local model_node = ModelNode.new(m, material)
 			if v.skin then
 				model_node.material.shader = ShaderUtils.shaders["default_mesh_skinning"]
 			else
@@ -68,7 +68,7 @@ local function create_nodes(builder, nodes, i)
 			node = array_nodes[1]
 		end
 	else
-		node = Node()
+		node = Node.new()
 	end
 
 	node.extras = v.extras
@@ -161,7 +161,7 @@ function NodeTreeBuilder.create(gltf, callback)
 
 	local scenes = {}
 	for i, v in ipairs(gltf.scenes) do
-		local scene_node = Node(v.name)
+		local scene_node = Node.new(v.name)
 		for _, inode in ipairs(v.nodes) do
 			scene_node:attach(builder.nodes[inode + 1])
 		end

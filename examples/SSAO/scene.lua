@@ -93,7 +93,7 @@ function SsaoScene.new()
 	self.camera = menori.PerspectiveCamera.new(60, w / h, 0.1, 1024)
 	self.environment = menori.Environment.new(self.camera)
 
-	self.root_node = menori.Node()
+	self.root_node = menori.Node.new()
 
 	local gltf = menori.glTFLoader.load("examples/assets/choco_bunny.glb")
 	local scenes = menori.NodeTreeBuilder.create(gltf, function(scene, builder)

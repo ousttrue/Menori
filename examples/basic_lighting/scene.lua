@@ -50,8 +50,8 @@ function BasicLightingScene.new()
 	self.environment:add_light("point_lights", PointLight.new(0, 0.5, 2, 0.8, 0.3, 0.1))
 	self.environment:add_light("point_lights", PointLight.new(2, 1, -1, 0.1, 0.3, 0.8))
 
-	self.root_node = menori.Node()
-	self.aabb_root = self.root_node:attach(menori.Node())
+	self.root_node = menori.Node.new()
+	self.aabb_root = self.root_node:attach(menori.Node.new())
 
 	-- loading the fragment shader code for lighting
 	local lighting_frag =

@@ -13,7 +13,6 @@ You need to inherit from the Node class to create your own display object.
 ]]
 --- @classmod Node
 
-local class = require("menori.libs.class")
 local ml = require("menori.ml")
 local mat4 = ml.mat4
 local vec3 = ml.vec3
@@ -23,12 +22,30 @@ local bound3 = ml.bound3
 local _find
 local _transform_force
 
-local Node = class("Node")
+---@class menori.Node
+-- @string[opt="node"] name Name of node.
+-- Children of this node. @field children
+-- @field parent Parent of this node.
+-- @bool[opt=false] detach_flag Flag that is used to detach this node from its parent during the next scene update.
+-- @bool[opt=true] update_flag Flag that sets whether the node is updated during the scene update pass.
+-- @bool[opt=true] render_flag Flag that sets whether the node is rendered during the scene render pass.
+-- @bool[opt=true] update_transform_flag Flag that sets whether the node transformations will be updated.
+-- @field[readonly] local_matrix Local transformation matrix
+-- @field[readonly] world_matrix World transformation matrix based on world (parent) factors.
+-- @tfield[readonly] vec3 position Local position.
+-- @tfield[readonly] quat rotation Local rotation.
+-- @tfield[readonly] vec3 scale Local scale.
+local Node = {}
+
+Node.__index = Node
 Node.layer = 0
 
 --- The public constructor.
 -- @string[opt='node'] name Node name.
-function Node:init(name)
+---@return menori.Node
+function Node.new(name)
+	local self = setmetatable({}, Node)
+
 	self.children = {}
 	self.parent = nil
 	self.name = name or "node"
@@ -48,6 +65,8 @@ function Node:init(name)
 	self.position = vec3(0)
 	self.rotation = quat()
 	self.scale = vec3(1)
+
+	return self
 end
 
 --- Clone an object.
@@ -353,51 +372,3 @@ function Node:debug_print(node, tabs)
 end
 
 return Node
-
----
--- Name of node.
--- @string[opt="node"] name
-
----
--- Children of this node.
--- @field children
-
----
--- Parent of this node.
--- @field parent
-
----
--- Flag that is used to detach this node from its parent during the next scene update.
--- @bool[opt=false] detach_flag
-
----
--- Flag that sets whether the node is updated during the scene update pass.
--- @bool[opt=true] update_flag
-
----
--- Flag that sets whether the node is rendered during the scene render pass.
--- @bool[opt=true] render_flag
-
----
--- Flag that sets whether the node transformations will be updated.
--- @bool[opt=true] update_transform_flag
-
----
--- Local transformation matrix
--- @field[readonly] local_matrix
-
----
--- World transformation matrix based on world (parent) factors.
--- @field[readonly] world_matrix
-
----
--- Local position.
--- @tfield[readonly] vec3 position
-
----
--- Local rotation.
--- @tfield[readonly] quat rotation
-
----
--- Local scale.
--- @tfield[readonly] vec3 scale

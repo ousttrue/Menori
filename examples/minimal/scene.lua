@@ -26,7 +26,7 @@ function MinimalScene:new()
 	self.camera = menori.PerspectiveCamera.new(60, w / h, 0.5, 1024)
 	self.environment = menori.Environment.new (self.camera)
 
-	self.root_node = menori.Node()
+	self.root_node = menori.Node.new()
 
 	local gltf = menori.glTFLoader.load("examples/assets/etrian_odyssey_3_monk.glb")
 
