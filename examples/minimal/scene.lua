@@ -14,6 +14,7 @@ local vec3 = ml.vec3
 local quat = ml.quat
 
 ---@class MinimalScene: menori.Scene
+---@field animations menori.GltfAnimation
 local MinimalScene = {}
 MinimalScene.__index = MinimalScene
 setmetatable(MinimalScene, menori.Scene)
@@ -31,7 +32,7 @@ function MinimalScene.new()
 
   -- build a scene node tree from the gltf data and initialize the animations
   local scenes = menori.NodeTreeBuilder.create(gltf, function(scene, builder)
-    self.animations = menori.glTFAnimations(builder.animations)
+    self.animations = menori.glTFAnimations.new(builder.animations)
     self.animations:set_action(1)
   end)
 

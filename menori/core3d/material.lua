@@ -17,7 +17,7 @@ local UniformList = require("menori.core3d.uniform_list")
 
 local ShaderUtils = require("menori.shaders.utils")
 
----@class menori.Material
+---@class menori.Material: menori.UniformList
 local Material = {
 	clone = utils.copy,
 }
@@ -28,6 +28,7 @@ Material.default_shader = ShaderUtils.shaders["default_mesh"]
 
 ---@param name string? Name of the material.
 ---@param shader love.Shader? [opt=Material.default_shader] shader [LOVE Shader](https://love2d.org/wiki/Shader)
+---@return menori.Material
 function Material.new(name, shader)
 	local self = setmetatable(UniformList.new(), Material)
 

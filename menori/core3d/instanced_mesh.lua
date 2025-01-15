@@ -11,19 +11,19 @@ Class provides instancing functionality for Meshes.
 ]]
 -- @classmod InstancedMesh
 
-local class = require("menori.libs.class")
-
 local lg = love.graphics
 
-local InstancedMesh = class("InstancedMesh")
+---@class menori.InstancedMesh
+local InstancedMesh = {}
+InstancedMesh.__index = InstancedMesh
 
 local default_format = {
 	{ name = "instance_position", format = "floatvec3" },
 }
 
-----
--- The public constructor.
-function InstancedMesh:init(lg_mesh, instanced_format)
+---@return menori.InstancedMesh
+function InstancedMesh.new(lg_mesh, instanced_format)
+	local self = setmetatable({}, InstancedMesh)
 	instanced_format = instanced_format or default_format
 	self.lg_mesh = lg_mesh
 	-- self.instanced_mesh_buffer = love.graphics.newBuffer(instanced_format, 16, { vertex = true })
@@ -37,6 +37,7 @@ function InstancedMesh:init(lg_mesh, instanced_format)
 
 	self.count = 0
 	self:_attach_buffer()
+	return self
 end
 
 function InstancedMesh:increase_count()

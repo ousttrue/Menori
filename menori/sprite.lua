@@ -11,14 +11,16 @@ Sprite class is a helper object for drawing textures that can contain a set of f
 ]]
 -- @classmod Sprite
 
-local class = require("menori.libs.class")
-
-local sprite = class("Sprite")
+---@class menori.Sprite
+local sprite = {}
+sprite.__index = sprite
 
 --- The public constructor.
 -- @param quads table of [Quad](https://love2d.org/wiki/Quad) objects
 -- @param image [Image](https://love2d.org/wiki/Image)
-function sprite:init(quads, image)
+---@return menori.Sprite
+function sprite.new(quads, image)
+	local self = setmetatable({}, sprite)
 	self.quads = quads
 	self.image = image
 	self.index = 1
@@ -28,6 +30,7 @@ function sprite:init(quads, image)
 	self.stop = false
 	self.duration_accumulator = 0
 	self.duration = 0.2 / self:get_frame_count()
+	return self
 end
 
 --- Clone (shallow copy).

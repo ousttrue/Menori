@@ -55,7 +55,6 @@ function love.update(dt)
   if steps > 0 then
     accumulator = accumulator - steps * tick_period
   end
-  local interpolation_dt = accumulator / tick_period
 
   local current_scene = scenes[scene_iterator]
   if current_scene and current_scene.update then

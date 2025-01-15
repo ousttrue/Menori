@@ -11,17 +11,19 @@ Camera for 2D scenes.
 ]]
 -- @classmod Camera
 
-local class = require "menori.libs.class"
 local ml = require "menori.ml"
 
 local mat4 = ml.mat4
 local vec3 = ml.vec3
 local quat = ml.quat
 
-local camera = class "Camera"
+---@class menori.Camera2D
+local camera = {}
+camera.__index = camera
 
---- The public constructor.
-function camera:init()
+---@return menori.Camera2D
+function camera.new()
+  local self = setmetatable({}, camera)
   self._update = true
 
   self._q = quat(0, 0, 0, 1)
@@ -44,6 +46,8 @@ function camera:init()
 
   local w, h = love.graphics.getDimensions()
   self:set_bounding_box(w, h)
+
+  return self
 end
 
 --- Set camera pivot.

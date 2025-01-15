@@ -11,7 +11,6 @@ A class that provides functionality for gltf animations.
 ]]
 -- @classmod glTFAnimation
 
-local class = require("menori.libs.class")
 local utils = require("menori.libs.utils")
 local ml = require("menori.ml")
 local Node = require("menori.node")
@@ -19,15 +18,21 @@ local Node = require("menori.node")
 local vec3 = ml.vec3
 local quat = ml.quat
 
-local glTFAnimation = class("glTFAnimations")
+---@class menori.GltfAnimation
+---@field accumulator number
+local glTFAnimation = {}
+glTFAnimation.__index = glTFAnimation
 
 ----
 -- The public constructor.
 -- @tparam table animations Animations loaded with the glTFLoader
-function glTFAnimation:init(animations)
+---@return menori.GltfAnimation
+function glTFAnimation.new(animations)
+	local self = setmetatable({}, glTFAnimation)
 	self.animations = animations
 	self.accumulator = 0
 	self.animation = self.animations[1]
+	return self
 end
 
 local function get_sampler_data(accumulator, sampler, target)

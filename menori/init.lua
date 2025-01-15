@@ -26,18 +26,13 @@ local menori = {
   Camera = require "menori.camera",
   Node = require "menori.node",
   Scene = require "menori.scene",
-  SceneManager = require "menori.scenemanager",
   Sprite = require "menori.sprite",
   SpriteLoader = require "menori.spriteloader",
 
   ShaderUtils = require "menori.shaders.utils",
 
   utils = require "menori.libs.utils",
-  class = require "menori.libs.class",
   ml = require "menori.ml",
-
-  ---@deprecated
-  GeometryBuffer = require "menori.deprecated.geometry_buffer",
 }
 
 return menori
