@@ -59,9 +59,10 @@ function BasicLightingScene.new()
     local lighting_shader = love.graphics.newShader(menori.ShaderUtils.cache["default_mesh_vert"], lighting_frag)
 
     local gltf, buffers = menori.glTFLoader.parse("examples/assets/pokemon_firered_-_players_room.glb")
-    local scenes = menori.NodeTreeBuilder.create(gltf, buffers)
+    local builder = menori.NodeTreeBuilder.new(gltf, buffers)
+    builder:create()
 
-    local scene = scenes[1]
+    local scene = builder.scenes[1]
     -- function(scene, builder)
     -- Callback for each scene in the gltf.
     -- Create AABB for each node and add it to the aabb_root node.

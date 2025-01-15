@@ -96,8 +96,9 @@ function SsaoScene.new()
     self.root_node = menori.Node.new()
 
     local gltf, buffers = menori.glTFLoader.parse("examples/assets/choco_bunny.glb")
-    local scenes = menori.NodeTreeBuilder.create(gltf, buffers)
-    local scene = scenes[1]
+    local builder = menori.NodeTreeBuilder.new(gltf, buffers)
+    builder:create()
+    local scene = builder.scenes[1]
     scene:traverse(function(node)
         if node.mesh then
             -- use deferred shader

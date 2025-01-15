@@ -66,8 +66,9 @@ function RaycastBvhScene.new()
     self.root_node:attach(self.box)
 
     local gltf, buffers = menori.glTFLoader.parse("examples/assets/pokemon_firered_-_players_room.glb")
-    local scenes = menori.NodeTreeBuilder.create(gltf, buffers)
-    local scene = scenes[1]
+    local builder = menori.NodeTreeBuilder.new(gltf, buffers)
+    builder:create()
+    local scene = builder.scenes[1]
     -- Create BVH for each mesh node.
     scene:traverse(function(node)
         if node.mesh then
