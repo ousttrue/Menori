@@ -19,7 +19,7 @@ local ShaderUtils = require("menori.shaders.utils")
 
 ---@class menori.Material: menori.UniformList
 local Material = {
-	clone = utils.copy,
+    clone = utils.copy,
 }
 Material.__index = Material
 setmetatable(Material, UniformList)
@@ -30,21 +30,21 @@ Material.default_shader = ShaderUtils.shaders["default_mesh"]
 ---@param shader love.Shader? [opt=Material.default_shader] shader [LOVE Shader](https://love2d.org/wiki/Shader)
 ---@return menori.Material
 function Material.new(name, shader)
-	local self = setmetatable(UniformList.new(), Material)
+    local self = setmetatable(UniformList.new(), Material)
 
-	self.name = name
-	self.shader = shader or Material.default_shader
+    self.name = name
+    self.shader = shader or Material.default_shader
 
-	self.depth_test = true
-	self.depth_func = "less"
+    self.depth_test = true
+    self.depth_func = "less"
 
-	self.wireframe = false
-	self.mesh_cull_mode = "back"
+    self.wireframe = false
+    self.mesh_cull_mode = "back"
 
-	self.alpha_mode = "OPAQUE"
-	self.main_texture = nil
+    self.alpha_mode = "OPAQUE"
+    self.main_texture = nil
 
-	return self
+    return self
 end
 
 Material.default = Material.new("Default")

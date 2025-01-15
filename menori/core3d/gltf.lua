@@ -12,754 +12,274 @@ Separated GLTF (.gltf+.bin+textures) or (.gltf+textures) is supported now.
 ]]
 -- @module glTFLoader
 
-local json = require "libs.rxijson.json"
-local ffi = require "menori.libs.ffi"
+local json = require("libs.rxijson.json")
 
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/asset.schema.json
+---@class gltf.Asset
+---@field copyright string
+---@field generator string
+---@field version string
+---@field minVersion string
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/glTFProperty.schema.json
+---@class gltf.Property
+---@field extras table?
+---@field extensions table?
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/glTFChildOfRootProperty.schema.json
+---@class gltf.ChildOfRootProperty: gltf.Property
+---@field name string?
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/buffer.schema.json
+---@class gltf.Buffer: gltf.ChildOfRootProperty
+---@field uri string?
+---@field byteLength integer
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/bufferView.schema.json
+---@class gltf.BufferView: gltf.ChildOfRootProperty
+---@field buffer integer
+---@field byteOffset integer?
+---@field byteLength integer
+---@field byteStride integer?
+---@field target integer?
+
+---@enum gltf.Accessor_ComponentType
+local GltfAccessor_ComponentType = {
+    BYTE = 5120,
+    UBYTE = 5121,
+    SHORT = 5122,
+    USHORT = 5123,
+    UINT = 5125,
+    FLOAT = 5126,
+}
+
+---@enum gltf.Accessor_Type
+local GltfAccessor_Type = {
+    SCALAR = "SCALAR",
+    VEC2 = "VEC2",
+    VEC3 = "VEC3",
+    VEC4 = "VEC4",
+    MAT2 = "MAT2",
+    MAT3 = "MAT3",
+    MAT4 = "MAT4",
+}
+
+---@enum gltf.Sampler_Wrap
+local Sampler_Wrap = {
+    CLAMP_TO_EDGE = 33071,
+    MIRRORED_REPEAT = 33648,
+    REPEAT = 10497,
+}
+
+---https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/accessor.schema.json
+---@class gltf.Accessor: gltf.ChildOfRootProperty
+---@field bufferView integer?
+---@field byteOffset integer?
+---@field componentType gltf.Accessor_ComponentType
+---@field normalized boolean?
+---@field count integer
+---@field type gltf.Accessor_Type
+---@field max number[]?
+---@field min number[]?
+---@field sparse table?
+
+---@class gltf.Sampler: gltf.ChildOfRootProperty
+---@field magFilter integer [9728:NEAREST, 9729:LINEAR]
+---@field minFilter integer [9728:NEAREST, 9729:LINEAR, 9984:NEAREST_MIPMAP_NEAREST, 9985:LINEAR_MIPMAP_NEAREST, 9986:NEAREST_MIPMAP_LINEAR, 9987:LINEAR_MIPMAP_LINEAR]
+---@field wrapS gltf.Sampler_Wrap
+---@field wrapT gltf.Sampler_Wrap
+
+---@class gltf.Image: gltf.ChildOfRootProperty
+---@field uri string?
+---@field mimeType string?
+---@field bufferView integer?
+
+---@class gltf.Texture: gltf.ChildOfRootProperty
+---@field sampler integer?
+---@field source integer
+
+---@class gltf.TextureInfo
+---@field index integer
+
+---@class gltf.PbrMetallicRoughness
+---@field baseColorFactor number[]?
+---@field baseColorTexture gltf.TextureInfo?
+---@field metallicFactor number?
+---@field roughnessFactor number?
+---@field metallicRoughnessTexture gltf.TextureInfo?
+
+---@class gltf.Material: gltf.ChildOfRootProperty
+---@field pbrMetallicRoughness gltf.PbrMetallicRoughness?
+---@field normalTexture gltf.TextureInfo?
+---@field occlusionTexture gltf.TextureInfo?
+---@field emissiveTexture gltf.TextureInfo?
+---@field emissiveFactor number[]?
+---@field alphaMode string ["OPAQUE", "MASK", "BLEND"]?
+---@field alphaCutoff number?
+---@field doubleSided boolean?
+
+---@class gltf.Attributes
+---@field POSITION integer
+---@field NORMAL integer?
+---@field TEXCOORD_0 integer?
+---@field TEXCOORD_1 integer?
+---@field TANGENT integer?
+---@field COLOR_0 integer?
+---@field JOINTS_0 integer?
+---@field WEIGHTS_0 integer?
+
+---@class gltf.MorphTarget
+---@field POSITION integer
+---@field NORMAL integer?
+
+---@class gltf.Primitive : gltf.Property
+---@field attributes gltf.Attributes
+---@field indices integer?
+---@field material integer?
+---@field targets gltf.MorphTarget[]?
+
+---@class gltf.Mesh: gltf.ChildOfRootProperty
+---@field primitives gltf.Primitive[]
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/node.schema.json
+---@class gltf.Node: gltf.ChildOfRootProperty
+---@field children integer[]?
+---@field matrix number[]?
+---@field rotation number[]?
+---@field scale number[]?
+---@field translation number[]?
+---@field mesh integer?
+---@field skin integer?
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/skin.schema.json
+---@class gltf.Skin: gltf.ChildOfRootProperty
+---@field inverseBindMatrices integer?
+---@field skeleton integer?
+---@field joints integer[]
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/scene.schema.json
+---@class gltf.Scene: gltf.ChildOfRootProperty
+---@field nodes integer[]?
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/animation.sampler.schema.json
+---@class gltf.AnimationSampler
+---@field input integer The index of an accessor containing keyframe timestamps.
+---@field interplocation "LINEAR"|"CUBE"|"STEP"
+---@field output integer The index of an accessor, containing keyframe output values.
+
+---https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/animation.channel.target.schema.json
+---@class gltf.AnimationChannelTarget
+---@field node integer?
+---@field path "translation"|"rotation"|"scale"|"weights"
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/animation.channel.schema.json
+---@class gltf.AnimationChannel
+---@field sampler integer
+---@field target gltf.AnimationChannelTarget
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/animation.schema.json
+---@class gltf.Animation: gltf.ChildOfRootProperty
+---@field samplers gltf.AnimationSampler[]
+---@field channels gltf.AnimationChannel[]
+
+--- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/glTF.schema.json
+---@class gltf.Root
+---@field asset gltf.Asset
+---@field buffers gltf.Buffer[]?
+---@field bufferViews gltf.BufferView[]?
+---@field accessors gltf.Accessor[]?
+---@field images gltf.Image[]?
+---@field samplers gltf.Sampler[]?
+---@field textures gltf.Texture[]?
+---@field materials gltf.Material[]?
+---@field meshes gltf.Mesh[]?
+---@field nodes gltf.Node[]?
+---@field skins gltf.Skin[]?
+---@field scenes gltf.Scene[]?
+---@field scene integer?
+---@field animations gltf.Animation[]?
 ---@class menori.gltf.Skin
 ---@field inverse_bind_matrices number[]
 ---@field joints integer[]
 ---@field skeleton integer?
 
----@class Buffer
----@field data table
----@field offset integer
----@field length integer
----@field stride integer
----@field component_size integer
----@field component_type string
----@field type integer
----@field type_elements_count integer
----@field count integer
----@field min table
----@field max table
-
----@class menori.gltf.Gltf
----@field asset menori.gltf.Asset
----@field nodes menori.gltf.Node[]
----@field scene integer
----@field materials menori.gltf.Material[]
----@field meshes menori.gltf.Mesh[]
----@field scenes menori.gltf.Scene[]
----@field images menori.gltf.Image[]
----@field animations menori.gltf.Animation[]
----@field skins menori.gltf.Skin[]
-
-local function getFFIPointer(data)
-  if data.getFFIPointer then
-    return data:getFFIPointer()
-  else
-    return data:getPointer()
-  end
-end
-
-local glTFLoader = {}
-
-local type_constants = {
-  ["SCALAR"] = 1,
-  ["VEC2"] = 2,
-  ["VEC3"] = 3,
-  ["VEC4"] = 4,
-  ["MAT2"] = 4,
-  ["MAT3"] = 9,
-  ["MAT4"] = 16,
-}
-
-local ffi_indices_types = {
-  [5121] = "unsigned char*",
-  [5123] = "unsigned short*",
-  [5125] = "unsigned int*",
-}
-
-local component_type_constants = {
-  [5120] = 1,
-  [5121] = 1,
-  [5122] = 2,
-  [5123] = 2,
-  [5125] = 4,
-  [5126] = 4,
-}
-
-local component_types = {
-  [5120] = "int8",
-  [5121] = "uint8",
-  [5122] = "int16",
-  [5123] = "unorm16",
-  [5125] = "uint32",
-  [5126] = "float",
-}
-
-local location_map = {
-  VertexPosition = 0,
-  VertexTexCoord = 1,
-  VertexColor = 2,
-  VertexNormal = 3,
-  VertexWeights = 4,
-  VertexJoints = 5,
-  VertexTangent = 6,
-}
-
-local add_vertex_format
-if love._version_major > 11 then
-  local types = {
-    ["SCALAR"] = "",
-    ["VEC2"] = "vec2",
-    ["VEC3"] = "vec3",
-    ["VEC4"] = "vec4",
-    ["MAT2"] = "mat2x2",
-    ["MAT3"] = "mat3x3",
-    ["MAT4"] = "mat4x4",
-  }
-  function add_vertex_format(vertexformat, attribute_name, buffer)
-    local format = component_types[buffer.component_type] .. types[buffer.type]
-    local location = location_map[attribute_name]
-    assert(type(location) == "number")
-    table.insert(vertexformat, {
-      name = attribute_name,
-      format = format,
-      location = location,
-    })
-  end
-else
-  local types = {
-    "byte",
-    "unorm16",
-    "",
-    "float",
-  }
-
-  function add_vertex_format(vertexformat, attribute_name, buffer)
-    table.insert(vertexformat, {
-      attribute_name,
-      types[buffer.component_size],
-      buffer.type_elements_count,
-    })
-  end
-end
-
-local attribute_aliases = {
-  ["POSITION"] = "VertexPosition",
-  ["TEXCOORD"] = "VertexTexCoord",
-  ["JOINTS"] = "VertexJoints",
-  ["NORMAL"] = "VertexNormal",
-  ["COLOR"] = "VertexColor",
-  ["WEIGHTS"] = "VertexWeights",
-  ["TANGENT"] = "VertexTangent",
-}
-
-local function get_primitive_modes_constants(mode)
-  if mode == 0 then
-    return "points"
-  elseif mode == 1 then
-  elseif mode == 2 then
-  elseif mode == 3 then
-  elseif mode == 5 then
-    return "strip"
-  elseif mode == 6 then
-    return "fan"
-  end
-  return "triangles"
-end
-
-local function get_unpack_type(component_type)
-  if component_type == 5120 then
-    return "b"
-  elseif component_type == 5121 then
-    return "B"
-  elseif component_type == 5122 then
-    return "h"
-  elseif component_type == 5123 then
-    return "H"
-  elseif component_type == 5125 then
-    return "I4"
-  elseif component_type == 5126 then
-    return "f"
-  end
-end
-
----@param gltf table
----@param accessor_index integer
----@return Buffer
-local function get_buffer(gltf, accessor_index)
-  local accessor = gltf.json_data.accessors[accessor_index + 1]
-  local buffer_view = gltf.json_data.bufferViews[accessor.bufferView + 1]
-
-  local offset = buffer_view.byteOffset or 0
-  local length = buffer_view.byteLength
-
-  local component_size = component_type_constants[accessor.componentType]
-  local type_elements_count = type_constants[accessor.type]
-  return {
-    data = gltf.buffers[buffer_view.buffer + 1],
-    offset = offset + (accessor.byteOffset or 0),
-    length = length,
-
-    stride = buffer_view.byteStride or (component_size * type_elements_count),
-    component_size = component_size,
-    component_type = accessor.componentType,
-    type = accessor.type,
-
-    type_elements_count = type_elements_count,
-    count = accessor.count,
-
-    min = accessor.min,
-    max = accessor.max,
-  }
-end
-
-local function get_indices_content(gltf, v)
-  local buffer = get_buffer(gltf, v)
-  local element_size = buffer.component_size * buffer.type_elements_count
-
-  local min = buffer.min and buffer.min[1] or 0
-  local max = buffer.max and buffer.max[1] or 0
-
-  local uint8 = element_size < 2
-
-  local temp_data
-  if ffi and not uint8 then
-    temp_data = love.data.newByteData(buffer.count * element_size)
-    local temp_data_pointer = ffi.cast("char*", getFFIPointer(temp_data))
-    local data = ffi.cast("char*", getFFIPointer(buffer.data)) + buffer.offset
-
-    for i = 0, buffer.count - 1 do
-      ffi.copy(temp_data_pointer + i * element_size, data + i * buffer.stride, element_size)
-      local value = ffi.cast(ffi_indices_types[buffer.component_type], temp_data_pointer + i * element_size)[0]
-      if value > max then
-        max = value
-      end
-      if value < min then
-        min = value
-      end
-    end
-
-    for i = 0, buffer.count - 1 do
-      local ptr = ffi.cast(ffi_indices_types[buffer.component_type], temp_data_pointer + i * element_size)
-      ptr[0] = ptr[0] - min
-    end
-  else
-    temp_data = {}
-    local data_string = buffer.data:getString()
-    local unpack_type = get_unpack_type(buffer.component_type)
-
-    for i = 0, buffer.count - 1 do
-      local pos = buffer.offset + i * element_size + 1
-      local value = love.data.unpack(unpack_type, data_string, pos)
-      temp_data[i + 1] = value + 1
-      if value > max then
-        max = value
-      end
-      if value < min then
-        min = value
-      end
-    end
-
-    for i = 0, buffer.count - 1 do
-      temp_data[i + 1] = temp_data[i + 1] - min
-    end
-  end
-  return temp_data, element_size, min, max
-end
-
-local function get_vertices_content(attribute_buffers, components_stride, length)
-  local start_offset = 0
-  local temp_data = love.data.newByteData(length)
-  if ffi then
-    local temp_data_pointer = ffi.cast("char*", getFFIPointer(temp_data))
-
-    for _, buffer in ipairs(attribute_buffers) do
-      local element_size = buffer.component_size * buffer.type_elements_count
-      for i = 0, buffer.count - 1 do
-        local p1 = buffer.offset + i * buffer.stride
-        local data = ffi.cast("char*", getFFIPointer(buffer.data)) + p1
-
-        local p2 = start_offset + i * components_stride
-
-        ffi.copy(temp_data_pointer + p2, data, element_size)
-      end
-      start_offset = start_offset + element_size
-    end
-  else
-    for _, buffer in ipairs(attribute_buffers) do
-      local unpack_type = get_unpack_type(buffer.component_type)
-
-      local element_size = buffer.component_size * buffer.type_elements_count
-
-      for i = 0, buffer.count - 1 do
-        local p1 = buffer.offset + i * buffer.stride
-        local p2 = start_offset + i * components_stride
-
-        for k = 0, buffer.type_elements_count - 1 do
-          local idx = k * buffer.component_size
-          local attr = love.data.unpack(unpack_type, buffer.data, p1 + idx + 1)
-          love.data.pack(temp_data, p2 + idx, unpack_type, attr)
-        end
-      end
-      start_offset = start_offset + element_size
-    end
-  end
-
-  return temp_data
-end
-
-local function get_attributes(gltf, attributes_array)
-  local attributes = {}
-  for name, attribute_index in pairs(attributes_array) do
-    local buffer = get_buffer(gltf, attribute_index)
-    local element_size = buffer.component_size * buffer.type_elements_count
-
-    local len = element_size * buffer.count
-    local bytedata = love.data.newByteData(len)
-    local unpack_type = get_unpack_type(buffer.component_type)
-
-    for i = 0, buffer.count - 1 do
-      local p1 = buffer.offset + i * buffer.stride
-      local p2 = i * element_size
-
-      for k = 0, buffer.type_elements_count - 1 do
-        local idx = k * buffer.component_size
-        local attr = love.data.unpack(unpack_type, buffer.data, p1 + idx + 1)
-        love.data.pack(bytedata, p2 + idx, unpack_type, attr)
-      end
-    end
-    attributes[name] = bytedata
-  end
-
-  return attributes
-end
-
-local function init_mesh(gltf, mesh)
-  local primitives = {}
-  for j, primitive in ipairs(mesh.primitives) do
-    local indices, indices_tsize
-    if primitive.indices then
-      indices, indices_tsize = get_indices_content(gltf, primitive.indices)
-    end
-
-    local length = 0
-    local components_stride = 0
-    local attribute_buffers = {}
-    local count = 0
-    local vertexformat = {}
-
-    for k, v in pairs(primitive.attributes) do
-      local attribute, value = k:match "(%w+)(.*)"
-      local attribute_name
-      if value == "_0" then
-        attribute_name = attribute_aliases[attribute]
-      elseif attribute_aliases[attribute] then
-        attribute_name = attribute_aliases[attribute] .. value
-      else
-        attribute_name = k
-      end
-
-      local buffer = get_buffer(gltf, v)
-      attribute_buffers[#attribute_buffers + 1] = buffer
-      if count <= 0 then
-        count = buffer.count
-      end
-
-      local element_size = buffer.component_size * buffer.type_elements_count
-
-      length = length + buffer.count * element_size
-      components_stride = components_stride + element_size
-
-      add_vertex_format(vertexformat, attribute_name, buffer)
-    end
-
-    local vertices = get_vertices_content(attribute_buffers, components_stride, length)
-
-    local targets = {}
-    if primitive.targets then
-      for _, attributes in ipairs(primitive.targets) do
-        table.insert(targets, get_attributes(gltf, attributes))
-      end
-    end
-
-    primitives[j] = {
-      mode = get_primitive_modes_constants(primitive.mode),
-      vertexformat = vertexformat,
-      vertices = vertices,
-      indices = indices,
-      targets = targets,
-      indices_tsize = indices_tsize,
-      material_index = primitive.material,
-      count = count,
-    }
-  end
-  return {
-    primitives = primitives,
-    name = mesh.name,
-  }
-end
-
-local function get_texture(textures, t)
-  if t then
-    local texture = textures[t.index + 1]
-    local ret = {
-      texture = texture,
-      source = texture.image.source,
-    }
-    for k, v in pairs(t) do
-      if k ~= "index" then
-        ret[k] = v
-      end
-    end
-    return ret
-  end
-end
-
-local function create_material(textures, material)
-  local uniforms = {}
-
-  local main_texture
-  local pbr = material.pbrMetallicRoughness
-  uniforms.baseColor = (pbr and pbr.baseColorFactor) or { 1, 1, 1, 1 }
-  if pbr then
-    local _pbrBaseColorTexture = pbr.baseColorTexture
-    local _pbrMetallicRoughnessTexture = pbr.metallicRoughnessTexture
-
-    main_texture = get_texture(textures, _pbrBaseColorTexture)
-    local metallicRoughnessTexture = get_texture(textures, _pbrMetallicRoughnessTexture)
-
-    if main_texture then
-      uniforms.mainTexCoord = main_texture.tcoord
-    end
-    if metallicRoughnessTexture then
-      uniforms.metallicRoughnessTexture = metallicRoughnessTexture.source
-      uniforms.metallicRoughnessTextureCoord = metallicRoughnessTexture.tcoord
-    end
-
-    uniforms.metalness = pbr.metallicFactor
-    uniforms.roughness = pbr.roughnessFactor
-  end
-
-  if material.normalTexture then
-    local normalTexture = get_texture(textures, material.normalTexture)
-    uniforms.normalTexture = normalTexture.source
-    uniforms.normalTextureCoord = normalTexture.tcoord
-    uniforms.normalTextureScale = normalTexture.scale
-  end
-
-  if material.occlusionTexture then
-    local occlusionTexture = get_texture(textures, material.occlusionTexture)
-    uniforms.occlusionTexture = occlusionTexture.source
-    uniforms.occlusionTextureCoord = occlusionTexture.tcoord
-    uniforms.occlusionTextureStrength = occlusionTexture.strength
-  end
-
-  if material.emissiveTexture then
-    local emissiveTexture = get_texture(textures, material.emissiveTexture)
-    uniforms.emissiveTexture = emissiveTexture.source
-    uniforms.emissiveTextureCoord = emissiveTexture.tcoord
-  end
-  uniforms.emissiveFactor = material.emissiveFactor or { 0, 0, 0 }
-  uniforms.opaque = material.alphaMode == "OPAQUE" or not material.alphaMode
-  if material.alphaMode == "MASK" then
-    uniforms.alphaCutoff = material.alphaCutoff or 0.5
-  else
-    uniforms.alphaCutoff = 0.0
-  end
-
-  return {
-    name = material.name,
-    main_texture = main_texture,
-    uniforms = uniforms,
-    double_sided = material.doubleSided,
-    alpha_mode = material.alphaMode or "OPAQUE",
-  }
-end
-
----@param value integer
----@return "nearest"|"linear"|"linear"
-local function parse_filter(value)
-  if value == 9728 then
-    return "nearest"
-  elseif value == 9729 then
-    return "linear"
-  else
-    return "linear"
-  end
-end
-
-local function parse_wrap(value)
-  if value == 33071 then
-    return "clamp"
-  elseif value == 33648 then
-    return "mirroredrepeat"
-  elseif value == 10497 then
-    return "repeat"
-  else
-    return "repeat"
-  end
-end
-
----@param buffer string
----@return number[]
-local function get_data_array(buffer)
-  local array = {}
-  if ffi then
-    for i = 0, buffer.count - 1 do
-      local data_offset = ffi.cast("char*", getFFIPointer(buffer.data)) + buffer.offset + i * buffer.stride
-      local ptr = ffi.cast("float*", data_offset)
-      if buffer.type_elements_count > 1 then
-        local vector = {}
-        for j = 1, buffer.type_elements_count do
-          local value = ptr[j - 1]
-          table.insert(vector, value)
-        end
-        table.insert(array, vector)
-      else
-        table.insert(array, ptr[0])
-      end
-    end
-  else
-    for i = 0, buffer.count - 1 do
-      local pos = (buffer.offset + i * buffer.stride) + 1
-      if buffer.type_elements_count > 1 then
-        local vector = {}
-        for j = 0, buffer.type_elements_count - 1 do
-          local value = love.data.unpack("f", buffer.data, pos + j * 4)
-          table.insert(vector, value)
-        end
-        table.insert(array, vector)
-      else
-        local value = love.data.unpack("f", buffer.data, pos)
-        table.insert(array, value)
-      end
-    end
-  end
-
-  return array
-end
-
-local function read_animation(gltf, animation)
-  local samplers = {}
-  for i, v in ipairs(animation.samplers) do
-    local time_buffer = get_buffer(gltf, v.input)
-    local data_buffer = get_buffer(gltf, v.output)
-
-    table.insert(samplers, {
-      time_array = get_data_array(time_buffer),
-      data_array = get_data_array(data_buffer),
-      interpolation = v.interpolation,
-    })
-  end
-
-  local channels = {}
-  for i, v in ipairs(animation.channels) do
-    table.insert(channels, {
-      sampler = samplers[v.sampler + 1],
-      target_node = v.target.node,
-      target_path = v.target.path,
-    })
-  end
-
-  return channels
-end
-
-local function load_image(gltf, io_read, path, images, texture)
-  local source = texture.source + 1
-  local MSFT_texture_dds = texture.extensions and texture.extensions.MSFT_texture_dds
-  if MSFT_texture_dds then
-    source = MSFT_texture_dds.source + 1
-  end
-
-  local image = images[source]
-  local image_raw_data
-  if image.uri then
-    local base64data = image.uri:match "^data:image/.*;base64,(.+)"
-    if base64data then
-      image_raw_data = love.data.decode("data", "base64", base64data)
-    else
-      local image_filename = path .. image.uri
-      image_raw_data = love.filesystem.newFileData(io_read(image_filename), image_filename)
-    end
-  else
-    local buffer_view = gltf.json_data.bufferViews[image.bufferView + 1]
-
-    local data = gltf.buffers[buffer_view.buffer + 1]
-
-    local offset = buffer_view.byteOffset or 0
-    local length = buffer_view.byteLength
-
-    image_raw_data = love.data.newDataView(data, offset, length)
-  end
-
-  local image_data
-  if not MSFT_texture_dds then
-    image_data = love.image.newImageData(image_raw_data)
-  else
-    image_data = love.image.newCompressedData(image_raw_data)
-  end
-
-  local image_source
-  if love._version_major > 11 then
-    image_source = love.graphics.newTexture(image_data, {
-      debugname = image.name,
-      linear = true,
-      mipmaps = true,
-    })
-  else
-    image_source = love.graphics.newImage(image_data)
-  end
-  image_data:release()
-  return {
-    source = image_source,
-  }
-end
+local M = {}
 
 local function unpack_data(format, iterator)
-  local pos = iterator.position
-  iterator.position = iterator.position + love.data.getPackedSize(format)
-  return love.data.unpack(format, iterator.data, pos + 1)
+    local pos = iterator.position
+    iterator.position = iterator.position + love.data.getPackedSize(format)
+    return love.data.unpack(format, iterator.data, pos + 1)
 end
 
-local function parse_glb(gltf, glb_data)
-  local iterator = {
-    position = 0,
-    data = glb_data,
-  }
-  local magic, version = unpack_data("<I4I4", iterator)
-  assert(magic == 0x46546C67, "GLB: wrong magic!")
-  assert(version == 0x2, "Supported only GLTF 2.0!")
+---@return gltf.Root
+---@return love.data
+local function parse_glb(glb_data)
+    local iterator = {
+        position = 0,
+        data = glb_data,
+    }
+    local magic, version = unpack_data("<I4I4", iterator)
+    assert(magic == 0x46546C67, "GLB: wrong magic!")
+    assert(version == 0x2, "Supported only GLTF 2.0!")
 
-  local length = unpack_data("<I4", iterator)
+    local length = unpack_data("<I4", iterator)
 
-  gltf.buffers = {}
+    local buffer_index = 1
 
-  local buffer_index = 1
+    local json_data
+    local buffers = {}
+    while iterator.position < length do
+        local chunk_length, chunk_type = unpack_data("<I4I4", iterator)
+        local start_position = iterator.position
+        if chunk_type == 0x4E4F534A then
+            local data_view = love.data.newDataView(glb_data, iterator.position, chunk_length)
+            json_data = json.decode(data_view:getString())
+        elseif chunk_type == 0x004E4942 then
+            local data_view = love.data.newDataView(glb_data, iterator.position, chunk_length)
+            buffers[buffer_index] = data_view
+            buffer_index = buffer_index + 1
+        end
 
-  while iterator.position < length do
-    local chunk_length, chunk_type = unpack_data("<I4I4", iterator)
-    local start_position = iterator.position
-    if chunk_type == 0x4E4F534A then
-      local data_view = love.data.newDataView(glb_data, iterator.position, chunk_length)
-      gltf.json_data = json.decode(data_view:getString())
-    elseif chunk_type == 0x004E4942 then
-      local data_view = love.data.newDataView(glb_data, iterator.position, chunk_length)
-      gltf.buffers[buffer_index] = data_view
-      buffer_index = buffer_index + 1
+        iterator.position = start_position + chunk_length
     end
 
-    iterator.position = start_position + chunk_length
-  end
+    return json_data, buffers
 end
 
 --- Load gltf model by filename.
 -- @function load
 ---@param filename string The filepath to the gltf file (GLTF must be separated (.gltf+.bin+textures) or (.gltf+textures)
 ---@param io_read (fun(path):string)? Callback to read the file.
----@return menori.gltf.Gltf
-function glTFLoader.load(filename, io_read)
-  if not io_read then
-    io_read = love.filesystem.read
-  end
-
-  local path = filename:match ".+/"
-  local name, extension = filename:match "([^/]+)%.(.+)$"
-  assert(love.filesystem.getInfo(filename), 'in function <glTFLoader.load> file "' .. filename .. '" not found.')
-
-  local gltf = {}
-
-  if extension == "gltf" then
-    local filedata = io_read(filename)
-    gltf.json_data = json.decode(filedata)
-    gltf.buffers = {}
-    for i, v in ipairs(gltf.json_data.buffers) do
-      local base64data = v.uri:match "^data:application/.*;base64,(.+)"
-      if base64data then
-        gltf.buffers[i] = love.data.decode("data", "base64", base64data)
-      else
-        gltf.buffers[i] = love.data.newByteData(io_read(path .. v.uri))
-      end
+---@return gltf.Root
+---@return love.Data[]
+function M.parse(filename, io_read)
+    if not io_read then
+        io_read = love.filesystem.read
     end
-  elseif extension == "glb" then
-    local filedata = assert(io_read("data", filename))
-    parse_glb(gltf, filedata)
-  end
 
-  local samplers = {}
-  if gltf.json_data.samplers then
-    for _, v in ipairs(gltf.json_data.samplers) do
-      table.insert(samplers, {
-        magFilter = parse_filter(v.magFilter),
-        minFilter = parse_filter(v.minFilter),
-        wrapS = parse_wrap(v.wrapS),
-        wrapT = parse_wrap(v.wrapT),
-      })
+    local path = filename:match(".+/")
+    local name, extension = filename:match("([^/]+)%.(.+)$")
+    assert(love.filesystem.getInfo(filename), 'in function <glTFLoader.load> file "' .. filename .. '" not found.')
+
+    if extension == "gltf" then
+        local filedata = io_read(filename)
+        local json_data = json.decode(filedata)
+        local buffers = {}
+        for i, v in ipairs(json_data.buffers) do
+            local base64data = v.uri:match("^data:application/.*;base64,(.+)")
+            if base64data then
+                buffers[i] = love.data.decode("data", "base64", base64data)
+            else
+                buffers[i] = love.data.newByteData(io_read(path .. v.uri))
+            end
+        end
+        return json_data, buffers
+    elseif extension == "glb" then
+        local filedata = assert(io_read("data", filename))
+        return parse_glb(filedata)
+    else
+        assert(false, "gltf nor glb")
     end
-  end
-
-  local images = {}
-  local textures = {}
-  if gltf.json_data.textures then
-    for _, texture in ipairs(gltf.json_data.textures) do
-      local sampler = samplers[texture.sampler + 1]
-      local image = images[texture.source + 1]
-
-      if not image then
-        image = load_image(gltf, io_read, path, gltf.json_data.images, texture)
-        images[texture.source + 1] = image
-      end
-
-      table.insert(textures, {
-        image = image,
-        sampler = sampler,
-      })
-
-      if sampler then
-        image.source:setFilter(sampler.magFilter, sampler.minFilter)
-        image.source:setWrap(sampler.wrapS, sampler.wrapT)
-      end
-    end
-  end
-
-  ---@type menori.gltf.Skin
-  local skins = {}
-  if gltf.json_data.skins then
-    for _, v in ipairs(gltf.json_data.skins) do
-      local buffer = get_buffer(gltf, v.inverseBindMatrices)
-      table.insert(skins, {
-        inverse_bind_matrices = get_data_array(buffer),
-        joints = v.joints,
-        skeleton = v.skeleton,
-      })
-    end
-  end
-
-  local materials = {}
-  if gltf.json_data.materials then
-    for i, v in ipairs(gltf.json_data.materials) do
-      materials[i] = create_material(textures, v)
-    end
-  end
-
-  local meshes = {}
-  for i, v in ipairs(gltf.json_data.meshes) do
-    meshes[i] = init_mesh(gltf, v)
-  end
-
-  local animations = {}
-  if gltf.json_data.animations then
-    for i, animation in ipairs(gltf.json_data.animations) do
-      animations[i] = {
-        channels = read_animation(gltf, animation),
-        name = animation.name,
-      }
-    end
-  end
-
-  return {
-    asset = gltf.json_data.asset,
-    nodes = gltf.json_data.nodes,
-    scene = gltf.json_data.scene,
-    materials = materials,
-    meshes = meshes,
-    scenes = gltf.json_data.scenes,
-    images = images,
-    animations = animations,
-    skins = skins,
-  }
 end
 
-return glTFLoader
+return M
