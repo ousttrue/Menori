@@ -50,7 +50,7 @@ end
 
 ---@return RaycastBvhScene
 function RaycastBvhScene.new()
-  local self = setmetatable(menori.Scene.new(), RaycastBvhScene)
+  local self = setmetatable(menori.Scene.new "RaycastBVH", RaycastBvhScene)
 
   local w, h = love.graphics.getDimensions()
   self.camera = menori.PerspectiveCamera.new(60, w / h, 0.5, 1024)
@@ -121,7 +121,11 @@ function RaycastBvhScene:update_camera()
   self.environment:set_vector("view_position", self.camera.eye)
 end
 
-function RaycastBvhScene:mousepressed(x, y, button, istouch, presses)
+---@param x number
+---@param y number
+---@param button number
+---@param istouch boolean
+function RaycastBvhScene:on_mousepressed(x, y, button, istouch)
   -- Placing the box at the last intersection point with the mesh.
   if button == 1 and self.box.render_flag then
     local boxshape = menori.BoxShape(0.2, 0.2, 0.2)
@@ -149,7 +153,9 @@ function RaycastBvhScene:on_mousemoved(x, y, dx, dy, istouch)
   end
 end
 
-function RaycastBvhScene:wheelmoved(x, y)
+---@param x number
+---@param y number
+function RaycastBvhScene:on_wheelmoved(x, y)
   self.view_scale = self.view_scale - y * 0.2
 end
 
@@ -189,7 +195,9 @@ function RaycastBvhScene:update()
   self.aabb_root.render_flag = tips[1].boolean
 end
 
-function RaycastBvhScene:keyreleased(key)
+---@param key string
+---@param scancode integer
+function RaycastBvhScene:on_keyreleased(key, scancode)
   for _, v in ipairs(tips) do
     if key == v.key then
       v.boolean = not v.boolean

@@ -38,8 +38,6 @@ local menori = {
 
   ---@deprecated
   GeometryBuffer = require "menori.deprecated.geometry_buffer",
-  ---@deprecated
-  app = require "menori.deprecated.app",
 }
 
 return menori

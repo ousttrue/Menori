@@ -19,9 +19,8 @@ MinimalScene.__index = MinimalScene
 setmetatable(MinimalScene, menori.Scene)
 
 ---@return MinimalScene
-function MinimalScene:new()
-  local self = setmetatable(menori.Scene.new(), MinimalScene)
-
+function MinimalScene.new()
+  local self = setmetatable(menori.Scene.new "Minimal", MinimalScene)
   local w, h = love.graphics.getDimensions()
   self.camera = menori.PerspectiveCamera.new(60, w / h, 0.5, 1024)
   self.environment = menori.Environment.new(self.camera)

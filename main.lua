@@ -1,22 +1,36 @@
 require("lldebugger").start()
-local menori = require "menori"
 
+---@type menori.Scene[]
+local scenes = {}
 local scene_iterator = 1
-local example_list = {
-  { title = "Minimal", path = "examples.minimal.scene" },
-  { title = "Basic Lighting", path = "examples.basic_lighting.scene" },
-  { title = "SSAO", path = "examples.SSAO.scene" },
-  { title = "RaycastBVH", path = "examples.raycast_bvh.scene" },
-}
-for _, v in ipairs(example_list) do
-  ---@type menori.Scene
-  local scene = require(v.path).new()
-  menori.app:add_scene(v.title, scene)
+local function prev_scene()
+  scene_iterator = scene_iterator - 1
+  if scene_iterator < 1 then
+    scene_iterator = #scenes
+  end
 end
-menori.app:set_scene "Minimal"
+local function next_scene()
+  scene_iterator = scene_iterator + 1
+  if scene_iterator > #scenes then
+    scene_iterator = 1
+  end
+end
+
+local accumulator = 0.0
+local tick_period = 1.0 / 60.0
+
+function love.load()
+  table.insert(scenes, require("examples.minimal.scene").new())
+  table.insert(scenes, require("examples.basic_lighting.scene").new())
+  table.insert(scenes, require("examples.SSAO.scene").new())
+  table.insert(scenes, require("examples.raycast_bvh.scene").new())
+end
 
 function love.draw()
-  menori.app:render()
+  local current_scene = scenes[scene_iterator]
+  if current_scene and current_scene.render then
+    current_scene:render()
+  end
 
   local font = love.graphics.getFont()
   local w, h = love.graphics.getDimensions()
@@ -26,14 +40,31 @@ function love.draw()
   love.graphics.setColor(1, 1, 1, 1)
   local prev_str = "Prev scene (press A)"
   local next_str = "Next scene (press D)"
-  love.graphics.print("Example: " .. example_list[scene_iterator].title, 10, 25)
+  if current_scene then
+    love.graphics.print("Example: " .. current_scene.title, 10, 25)
+  end
   love.graphics.print(prev_str, 10, h - 30)
   love.graphics.print(next_str, w - font:getWidth(next_str) - 10, h - 30)
 end
 
 ---@param dt number delta time seconds
 function love.update(dt)
-  menori.app:update(dt)
+  -- update time
+  accumulator = accumulator + dt
+  local steps = math.floor(accumulator / tick_period)
+  if steps > 0 then
+    accumulator = accumulator - steps * tick_period
+  end
+  local interpolation_dt = accumulator / tick_period
+
+  local current_scene = scenes[scene_iterator]
+  if current_scene and current_scene.update then
+    -- update scene
+    while steps > 0 do
+      current_scene:update(tick_period)
+      steps = steps - 1
+    end
+  end
 
   if love.keyboard.isDown "escape" then
     love.event.quit()
@@ -41,34 +72,37 @@ function love.update(dt)
   love.mouse.setRelativeMode(love.mouse.isDown(2))
 end
 
-local function set_scene()
-  menori.app:set_scene(example_list[scene_iterator].title)
-end
-
-function love.wheelmoved(...)
-  menori.app:handle_event("wheelmoved", ...)
-end
-
-function love.keyreleased(key, ...)
-  if key == "a" then
-    scene_iterator = scene_iterator - 1
-    if scene_iterator < 1 then
-      scene_iterator = #example_list
-    end
-    set_scene()
+---@param x number
+---@param y number
+function love.wheelmoved(x, y)
+  local current_scene = scenes[scene_iterator]
+  if current_scene then
+    current_scene:on_wheelmoved(x, y)
   end
-  if key == "d" then
-    scene_iterator = scene_iterator + 1
-    if scene_iterator > #example_list then
-      scene_iterator = 1
-    end
-    set_scene()
-  end
-  menori.app:handle_event("keyreleased", key, ...)
 end
 
-function love.keypressed(...)
-  menori.app:handle_event("keypressed", ...)
+-- https://love2d.org/wiki/love.keyreleased
+---@param key string
+---@param scancode integer
+function love.keyreleased(key, scancode)
+  local current_scene = scenes[scene_iterator]
+  if current_scene then
+    if key == "a" then
+      prev_scene()
+    elseif key == "d" then
+      next_scene()
+    end
+    current_scene:on_keyreleased(key, scancode)
+  end
+end
+
+---@param key string
+---@param scancode integer
+function love.keypressed(key, scancode)
+  local current_scene = scenes[scene_iterator]
+  if current_scene then
+    current_scene:on_keypressed(key, scancode)
+  end
 end
 
 -- https://love2d.org/wiki/love.mousemoved
@@ -78,9 +112,20 @@ end
 ---@param dy number
 ---@param istouch boolean
 function love.mousemoved(x, y, dx, dy, istouch)
-  menori.app:mousemoved(x, y, dx, dy, istouch)
+  local current_scene = scenes[scene_iterator]
+  if current_scene then
+    current_scene:on_mousemoved(x, y, dx, dy, istouch)
+  end
 end
 
-function love.mousepressed(...)
-  menori.app:handle_event("mousepressed", ...)
+-- https://love2d.org/wiki/love.mousepressed
+---@param x number
+---@param y number
+---@param button number
+---@param istouch boolean
+function love.mousepressed(x, y, button, istouch)
+  local current_scene = scenes[scene_iterator]
+  if current_scene then
+    current_scene:on_mousepressed(x, y, button, istouch)
+  end
 end

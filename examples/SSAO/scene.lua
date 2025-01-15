@@ -64,7 +64,7 @@ setmetatable(SsaoScene, menori.Scene)
 
 ---@return SsaoScene
 function SsaoScene.new()
-  local self = setmetatable(menori.Scene.new(), SsaoScene)
+  local self = setmetatable(menori.Scene.new "SSAO", SsaoScene)
 
   local w, h = love.graphics.getDimensions()
   self.ssao_c = love.graphics.newCanvas(w, h)
@@ -194,7 +194,8 @@ function SsaoScene:render()
   love.graphics.setColor(1, 1, 1, 1)
 end
 
-function SsaoScene:keyreleased(key)
+---@param key string
+function SsaoScene:on_keyreleased(key)
   for _, v in ipairs(tips) do
     if key == v.key then
       v.boolean = not v.boolean
@@ -216,7 +217,9 @@ function SsaoScene:on_mousemoved(x, y, dx, dy, istouch)
   end
 end
 
-function SsaoScene:wheelmoved(x, y)
+---@param x number
+---@param y number
+function SsaoScene:on_wheelmoved(x, y)
   self.view_scale = self.view_scale - y * 0.2
 end
 

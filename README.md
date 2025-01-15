@@ -13,9 +13,13 @@ You can generate documentation using `ldoc -c menori/docs/config.ld -o index .`
 
 ![preview_example](preview.png)
 
-# Usage Example
+## mod
 
-``` lua
+- type annotation: https://luals.github.io/wiki/annotations/
+
+## Usage Example
+
+```lua
 local menori = require 'menori'
 
 local ml = menori.ml
@@ -72,7 +76,8 @@ function love.update(dt)
 end
 ```
 
-See ```main.lua``` for a more complete example.
+See `main.lua` for a more complete example.
 
-# License
+## License
+
 MIT

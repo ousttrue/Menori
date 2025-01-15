@@ -11,7 +11,6 @@ Camera for 2D scenes.
 ]]
 -- @classmod Camera
 
-local app = require "menori.deprecated.app"
 local class = require "menori.libs.class"
 local ml = require "menori.ml"
 

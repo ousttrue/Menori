@@ -31,6 +31,7 @@ local function default_filter(node, scene, environment)
 end
 
 ---@class menori.Scene
+---@field title string
 ---@field list_drawable_nodes table
 ---@field transparent_flag boolean
 ---@field camera menori.PerspectiveCamera
@@ -42,9 +43,12 @@ local Scene = {
 }
 Scene.__index = Scene
 
+---@param title string
 ---@return menori.Scene
-function Scene.new()
-  local self = setmetatable({}, Scene)
+function Scene.new(title)
+  local self = setmetatable({
+    title = title,
+  }, Scene)
   self.list_drawable_nodes = {}
   self.transparent_flag = false
   return self
@@ -155,7 +159,8 @@ end
 
 function Scene:render() end
 
-function Scene:update() end
+---@param dt number
+function Scene:update(dt) end
 
 function Scene:on_enter() end
 
@@ -163,9 +168,27 @@ function Scene:on_leave() end
 
 ---@param x number
 ---@param y number
+---@param button number
+---@param istouch boolean
+function Scene:on_mousepressed(x, y, button, istouch) end
+
+---@param x number
+---@param y number
 ---@param dx number
 ---@param dy number
 ---@param istouch boolean
 function Scene:on_mousemoved(x, y, dx, dy, istouch) end
+
+---@param x number
+---@param y number
+function Scene:on_wheelmoved(x, y) end
+
+---@param key string
+---@param scancode integer
+function Scene:on_keypressed(key, scancode) end
+
+---@param key string
+---@param scancode integer
+function Scene:on_keyreleased(key, scancode) end
 
 return Scene

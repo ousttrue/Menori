@@ -40,7 +40,7 @@ setmetatable(BasicLightingScene, menori.Scene)
 
 ---@return BasicLightingScene
 function BasicLightingScene.new()
-  local self = setmetatable(menori.Scene.new(), BasicLightingScene)
+  local self = setmetatable(menori.Scene.new "Basic Lighting", BasicLightingScene)
 
   local w, h = love.graphics.getDimensions()
   self.camera = menori.PerspectiveCamera.new(60, w / h, 0.5, 1024)
@@ -124,6 +124,8 @@ function BasicLightingScene:on_mousemoved(x, y, dx, dy, istouch)
   end
 end
 
+---@param x number
+---@param y number
 function BasicLightingScene:wheelmoved(x, y)
   self.view_scale = self.view_scale - y * 0.2
 end
