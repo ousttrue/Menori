@@ -35,18 +35,6 @@ function App:get_current_scene()
   return self.current_scene
 end
 
---- Get viewport width.
--- @treturn number
-function App:get_viewport_w()
-  return self.w or graphics_w
-end
-
---- Get viewport height.
--- @treturn number
-function App:get_viewport_h()
-  return self.h or graphics_h
-end
-
 --- Add scene to the scene list.
 -- @tparam string name
 -- @tparam menori.Scene scene object

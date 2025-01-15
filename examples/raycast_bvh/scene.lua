@@ -125,12 +125,12 @@ function RaycastBvhScene:mousepressed(x, y, button, istouch, presses)
   -- Placing the box at the last intersection point with the mesh.
   if button == 1 and self.box.render_flag then
     local boxshape = menori.BoxShape(0.2, 0.2, 0.2)
-    local material = menori.Material()
+    local material = menori.Material.new()
     local r = love.math.random()
     local g = love.math.random()
     local b = love.math.random()
     material:set("baseColor", { r, g, b, 1.0 })
-    self.box = menori.ModelNode(boxshape, material)
+    self.box = menori.ModelNode.new(boxshape, material)
     self.root_node:attach(self.box)
   end
 end
