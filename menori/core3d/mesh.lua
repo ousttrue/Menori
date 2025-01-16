@@ -43,6 +43,33 @@ end
 
 Mesh.default_vertexformat = vertexformat
 
+---@param attributes_array table<string, integer>
+local function get_attributes(attributes_array)
+    local attributes = {}
+    for name, attribute_index in pairs(attributes_array) do
+        local buffer = self:get_buffer(attribute_index)
+        local element_size = buffer.component_size * buffer.type_elements_count
+
+        local len = element_size * buffer.count
+        local bytedata = love.data.newByteData(len)
+        local unpack_type = get_unpack_type(buffer.component_type)
+
+        for i = 0, buffer.count - 1 do
+            local p1 = buffer.offset + i * buffer.stride
+            local p2 = i * element_size
+
+            for k = 0, buffer.type_elements_count - 1 do
+                local idx = k * buffer.component_size
+                local attr = love.data.unpack(unpack_type, buffer.data, p1 + idx + 1)
+                love.data.pack(bytedata, p2 + idx, unpack_type, attr)
+            end
+        end
+        attributes[name] = bytedata
+    end
+
+    return attributes
+end
+
 ---@return love.Mesh
 local function create_mesh_from_primitive(primitive, texture)
     local count = primitive.count or #primitive.vertices
