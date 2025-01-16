@@ -20,6 +20,7 @@ local lg = love.graphics
 
 ---@class menori.Mesh
 ---@field lg_mesh love.Mesh
+---@field material_index integer
 local Mesh = {}
 Mesh.__index = Mesh
 

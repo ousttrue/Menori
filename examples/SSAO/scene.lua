@@ -96,7 +96,7 @@ function SsaoScene.new()
     self.root_node = menori.Node.new()
 
     local gltf, buffers = menori.glTFLoader.parse("examples/assets/choco_bunny.glb")
-    local builder = menori.NodeTreeBuilder.new(gltf, buffers)
+    local builder = menori.NodeTreeBuilder.new(menori.GltfData.new(gltf, buffers))
     builder:create()
     local scene = builder.scenes[1]
     scene:traverse(function(node)

@@ -16,17 +16,22 @@ local ModelNode = require("menori.core3d.model_node")
 local Mesh = require("menori.core3d.mesh")
 local Material = require("menori.core3d.material")
 local ffi = require("menori.libs.ffi")
-
 local ShaderUtils = require("menori.shaders.utils")
-
 local ml = require("menori.ml")
 local mat4 = ml.mat4
 local vec3 = ml.vec3
 local quat = ml.quat
 
+local function getFFIPointer(data)
+    if data.getFFIPointer then
+        return data:getFFIPointer()
+    else
+        return data:getPointer()
+    end
+end
+
 ---@class menori.NodeTreeBuilder
----@field gltf gltf.Root
----@field buffers table[]
+---@field data menori.GltfData
 ---@field meshes menori.Mesh[][]
 ---@field materials menori.Material[]
 ---@field nodes menori.Node[]
@@ -35,13 +40,11 @@ local quat = ml.quat
 local NodeTreeBuilder = {}
 NodeTreeBuilder.__index = NodeTreeBuilder
 
----@param gltf gltf.Root
----@param buffers table[]
+---@param data menori.GltfData
 ---@return menori.NodeTreeBuilder
-function NodeTreeBuilder.new(gltf, buffers)
+function NodeTreeBuilder.new(data)
     local self = setmetatable({
-        gltf = gltf,
-        buffers = buffers,
+        data = data,
         meshes = {},
         materials = {},
         nodes = {},
@@ -56,7 +59,7 @@ function NodeTreeBuilder:create_nodes(i)
     if exist then
         return exist
     end
-    local v = self.gltf.nodes[i]
+    local v = self.data.gltf.nodes[i]
     local t = vec3()
     local r = quat(0, 0, 0, 1)
     local s = vec3(1)
@@ -140,19 +143,16 @@ local function parse_wrap(value)
     end
 end
 
----@param io_read any
----@param path any
----@param images any
----@param texture any
+---@param texture gltf.Texture
 ---@return table
-function NodeTreeBuilder:load_image(io_read, path, texture)
+function NodeTreeBuilder:load_image(texture)
     local source = texture.source + 1
     local MSFT_texture_dds = texture.extensions and texture.extensions.MSFT_texture_dds
     if MSFT_texture_dds then
         source = MSFT_texture_dds.source + 1
     end
 
-    local image = self.gltf.images[source]
+    local image = self.data.gltf.images[source]
     local image_raw_data
     if image.uri then
         local base64data = image.uri:match("^data:image/.*;base64,(.+)")
@@ -163,9 +163,9 @@ function NodeTreeBuilder:load_image(io_read, path, texture)
             image_raw_data = love.filesystem.newFileData(io_read(image_filename), image_filename)
         end
     else
-        local buffer_view = self.gltf.bufferViews[image.bufferView + 1]
+        local buffer_view = self.data.gltf.bufferViews[image.bufferView + 1]
 
-        local data = self.buffers[buffer_view.buffer + 1]
+        local data = self.data.buffers[buffer_view.buffer + 1]
 
         local offset = buffer_view.byteOffset or 0
         local length = buffer_view.byteLength
@@ -196,15 +196,6 @@ function NodeTreeBuilder:load_image(io_read, path, texture)
     }
 end
 
-local component_type_constants = {
-    [5120] = 1,
-    [5121] = 1,
-    [5122] = 2,
-    [5123] = 2,
-    [5125] = 4,
-    [5126] = 4,
-}
-
 local component_types = {
     [5120] = "int8",
     [5121] = "uint8",
@@ -213,92 +204,6 @@ local component_types = {
     [5125] = "uint32",
     [5126] = "float",
 }
-
-local type_constants = {
-    ["SCALAR"] = 1,
-    ["VEC2"] = 2,
-    ["VEC3"] = 3,
-    ["VEC4"] = 4,
-    ["MAT2"] = 4,
-    ["MAT3"] = 9,
-    ["MAT4"] = 16,
-}
-
----@param accessor_index integer
----@return Buffer
-function NodeTreeBuilder:get_buffer(accessor_index)
-    local accessor = self.gltf.accessors[accessor_index + 1]
-    local buffer_view = self.gltf.bufferViews[accessor.bufferView + 1]
-
-    local offset = buffer_view.byteOffset or 0
-    local length = buffer_view.byteLength
-
-    local component_size = component_type_constants[accessor.componentType]
-    local type_elements_count = type_constants[accessor.type]
-    return {
-        data = self.buffers[buffer_view.buffer + 1],
-        offset = offset + (accessor.byteOffset or 0),
-        length = length,
-
-        stride = buffer_view.byteStride or (component_size * type_elements_count),
-        component_size = component_size,
-        component_type = accessor.componentType,
-        type = accessor.type,
-
-        type_elements_count = type_elements_count,
-        count = accessor.count,
-
-        min = accessor.min,
-        max = accessor.max,
-    }
-end
-
-local function getFFIPointer(data)
-    if data.getFFIPointer then
-        return data:getFFIPointer()
-    else
-        return data:getPointer()
-    end
-end
-
----@param buffer string
----@return number[]
-local function get_data_array(buffer)
-    local array = {}
-    if ffi then
-        for i = 0, buffer.count - 1 do
-            local data_offset = ffi.cast("char*", getFFIPointer(buffer.data)) + buffer.offset + i * buffer.stride
-            local ptr = ffi.cast("float*", data_offset)
-            if buffer.type_elements_count > 1 then
-                local vector = {}
-                for j = 1, buffer.type_elements_count do
-                    local value = ptr[j - 1]
-                    table.insert(vector, value)
-                end
-                table.insert(array, vector)
-            else
-                table.insert(array, ptr[0])
-            end
-        end
-    else
-        for i = 0, buffer.count - 1 do
-            local pos = (buffer.offset + i * buffer.stride) + 1
-            if buffer.type_elements_count > 1 then
-                local vector = {}
-                for j = 0, buffer.type_elements_count - 1 do
-                    local value = love.data.unpack("f", buffer.data, pos + j * 4)
-                    table.insert(vector, value)
-                end
-                table.insert(array, vector)
-            else
-                local value = love.data.unpack("f", buffer.data, pos)
-                table.insert(array, value)
-            end
-        end
-    end
-
-    return array
-end
 
 local function get_texture(textures, t)
     if t then
@@ -475,8 +380,9 @@ function NodeTreeBuilder:get_attributes(attributes_array)
 end
 
 ---@param v integer
+---@return love.Data|number[]
 function NodeTreeBuilder:get_indices_content(v)
-    local buffer = self:get_buffer(v)
+    local buffer = self.data:get_buffer(v)
     local element_size = buffer.component_size * buffer.type_elements_count
 
     local min = buffer.min and buffer.min[1] or 0
@@ -621,7 +527,7 @@ function NodeTreeBuilder:init_mesh(mesh)
                 attribute_name = k
             end
 
-            local buffer = self:get_buffer(v)
+            local buffer = self.data:get_buffer(v)
             attribute_buffers[#attribute_buffers + 1] = buffer
             if count <= 0 then
                 count = buffer.count
@@ -665,13 +571,12 @@ end
 ---@return table
 function NodeTreeBuilder:read_animation(animation)
     local samplers = {}
-    for i, v in ipairs(animation.samplers) do
-        local time_buffer = self:get_buffer(v.input)
-        local data_buffer = self:get_buffer(v.output)
-
+    for _, v in ipairs(animation.samplers) do
+        local time_buffer = self.data:get_buffer(v.input)
+        local data_buffer = self.data:get_buffer(v.output)
         table.insert(samplers, {
-            time_array = get_data_array(time_buffer),
-            data_array = get_data_array(data_buffer),
+            time_array = time_buffer:get_data_array(),
+            data_array = data_buffer:get_data_array(),
             interpolation = v.interpolation,
         })
     end
@@ -693,8 +598,8 @@ end
 ---@return table
 function NodeTreeBuilder:create()
     local samplers = {}
-    if self.gltf.samplers then
-        for _, v in ipairs(self.gltf.samplers) do
+    if self.data.gltf.samplers then
+        for _, v in ipairs(self.data.gltf.samplers) do
             table.insert(samplers, {
                 magFilter = parse_filter(v.magFilter),
                 minFilter = parse_filter(v.minFilter),
@@ -706,13 +611,13 @@ function NodeTreeBuilder:create()
 
     local images = {}
     local textures = {}
-    if self.gltf.textures then
-        for _, texture in ipairs(self.gltf.textures) do
+    if self.data.gltf.textures then
+        for _, texture in ipairs(self.data.gltf.textures) do
             local sampler = samplers[texture.sampler + 1]
             local image = images[texture.source + 1]
 
             if not image then
-                image = self:load_image(io_read, path, texture)
+                image = self:load_image(texture)
                 images[texture.source + 1] = image
             end
 
@@ -730,11 +635,11 @@ function NodeTreeBuilder:create()
 
     ---@type menori.gltf.Skin
     local skins = {}
-    if self.gltf.skins then
-        for _, v in ipairs(self.gltf.skins) do
-            local buffer = self:get_buffer(v.inverseBindMatrices)
+    if self.data.gltf.skins then
+        for _, v in ipairs(self.data.gltf.skins) do
+            local buffer = self.data:get_buffer(v.inverseBindMatrices)
             table.insert(skins, {
-                inverse_bind_matrices = get_data_array(buffer),
+                inverse_bind_matrices = buffer:get_data_array(),
                 joints = v.joints,
                 skeleton = v.skeleton,
             })
@@ -742,20 +647,20 @@ function NodeTreeBuilder:create()
     end
 
     local materials = {}
-    if self.gltf.materials then
-        for i, v in ipairs(self.gltf.materials) do
+    if self.data.gltf.materials then
+        for i, v in ipairs(self.data.gltf.materials) do
             materials[i] = create_material(textures, v)
         end
     end
 
     local meshes = {}
-    for i, v in ipairs(self.gltf.meshes) do
+    for i, v in ipairs(self.data.gltf.meshes) do
         meshes[i] = self:init_mesh(v)
     end
 
     local animations = {}
-    if self.gltf.animations then
-        for i, animation in ipairs(self.gltf.animations) do
+    if self.data.gltf.animations then
+        for i, animation in ipairs(self.data.gltf.animations) do
             animations[i] = {
                 channels = self:read_animation(animation),
                 name = animation.name,
@@ -786,9 +691,9 @@ function NodeTreeBuilder:create()
         self.materials[i] = material
     end
 
-    for node_index = 1, #self.gltf.nodes do
+    for node_index = 1, #self.data.gltf.nodes do
         local node = self:create_nodes(node_index)
-        local skin = self.gltf.nodes[node_index].skin
+        local skin = self.data.gltf.nodes[node_index].skin
         if skin then
             skin = skins[skin + 1]
             node.joints = {}
@@ -817,7 +722,7 @@ function NodeTreeBuilder:create()
         table.insert(self.animations, animation)
     end
 
-    for i, v in ipairs(self.gltf.scenes) do
+    for i, v in ipairs(self.data.gltf.scenes) do
         local scene_node = Node.new(v.name)
         for _, inode in ipairs(v.nodes) do
             scene_node:attach(self.nodes[inode + 1])

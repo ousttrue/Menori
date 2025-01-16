@@ -32,7 +32,7 @@ function MinimalScene.new()
     local gltf, buffers = menori.glTFLoader.parse("examples/assets/etrian_odyssey_3_monk.glb")
 
     -- build a scene node tree from the gltf data and initialize the animations
-    local builder = menori.NodeTreeBuilder.new(gltf, buffers)
+    local builder = menori.NodeTreeBuilder.new(menori.GltfData.new(gltf, buffers))
     builder:create()
     self.animations = menori.glTFAnimations.new(builder.animations)
     self.animations:set_action(1)

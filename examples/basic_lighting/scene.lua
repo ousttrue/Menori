@@ -59,7 +59,7 @@ function BasicLightingScene.new()
     local lighting_shader = love.graphics.newShader(menori.ShaderUtils.cache["default_mesh_vert"], lighting_frag)
 
     local gltf, buffers = menori.glTFLoader.parse("examples/assets/pokemon_firered_-_players_room.glb")
-    local builder = menori.NodeTreeBuilder.new(gltf, buffers)
+    local builder = menori.NodeTreeBuilder.new(menori.GltfData.new(gltf, buffers))
     builder:create()
 
     local scene = builder.scenes[1]

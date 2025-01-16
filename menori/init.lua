@@ -21,6 +21,7 @@ local menori = {
     BoxShape = require("menori.core3d.boxshape"),
     Mesh = require("menori.core3d.mesh"),
     ModelNode = require("menori.core3d.model_node"),
+    GltfData = require("menori.core3d.gltfdata"),
     NodeTreeBuilder = require("menori.core3d.node_tree_builder"),
     InstancedMesh = require("menori.core3d.instanced_mesh"),
     Camera = require("menori.camera"),
