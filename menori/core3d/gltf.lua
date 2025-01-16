@@ -211,44 +211,44 @@ local json = require("libs.rxijson.json")
 local M = {}
 
 local function unpack_data(format, iterator)
-    local pos = iterator.position
-    iterator.position = iterator.position + love.data.getPackedSize(format)
-    return love.data.unpack(format, iterator.data, pos + 1)
+  local pos = iterator.position
+  iterator.position = iterator.position + love.data.getPackedSize(format)
+  return love.data.unpack(format, iterator.data, pos + 1)
 end
 
 ---@return gltf.Root
 ---@return love.data
 local function parse_glb(glb_data)
-    local iterator = {
-        position = 0,
-        data = glb_data,
-    }
-    local magic, version = unpack_data("<I4I4", iterator)
-    assert(magic == 0x46546C67, "GLB: wrong magic!")
-    assert(version == 0x2, "Supported only GLTF 2.0!")
+  local iterator = {
+    position = 0,
+    data = glb_data,
+  }
+  local magic, version = unpack_data("<I4I4", iterator)
+  assert(magic == 0x46546C67, "GLB: wrong magic!")
+  assert(version == 0x2, "Supported only GLTF 2.0!")
 
-    local length = unpack_data("<I4", iterator)
+  local length = unpack_data("<I4", iterator)
 
-    local buffer_index = 1
+  local buffer_index = 1
 
-    local json_data
-    local buffers = {}
-    while iterator.position < length do
-        local chunk_length, chunk_type = unpack_data("<I4I4", iterator)
-        local start_position = iterator.position
-        if chunk_type == 0x4E4F534A then
-            local data_view = love.data.newDataView(glb_data, iterator.position, chunk_length)
-            json_data = json.decode(data_view:getString())
-        elseif chunk_type == 0x004E4942 then
-            local data_view = love.data.newDataView(glb_data, iterator.position, chunk_length)
-            buffers[buffer_index] = data_view
-            buffer_index = buffer_index + 1
-        end
-
-        iterator.position = start_position + chunk_length
+  local json_data
+  local buffers = {}
+  while iterator.position < length do
+    local chunk_length, chunk_type = unpack_data("<I4I4", iterator)
+    local start_position = iterator.position
+    if chunk_type == 0x4E4F534A then
+      local data_view = love.data.newDataView(glb_data, iterator.position, chunk_length)
+      json_data = json.decode(data_view:getString())
+    elseif chunk_type == 0x004E4942 then
+      local data_view = love.data.newDataView(glb_data, iterator.position, chunk_length)
+      buffers[buffer_index] = data_view
+      buffer_index = buffer_index + 1
     end
 
-    return json_data, buffers
+    iterator.position = start_position + chunk_length
+  end
+
+  return json_data, buffers
 end
 
 --- Load gltf model by filename.
@@ -258,33 +258,33 @@ end
 ---@return gltf.Root
 ---@return love.Data[]
 function M.parse(filename, io_read)
-    if not io_read then
-        io_read = love.filesystem.read
-    end
+  if not io_read then
+    io_read = love.filesystem.read
+  end
 
-    local path = filename:match(".+/")
-    local name, extension = filename:match("([^/]+)%.(.+)$")
-    assert(love.filesystem.getInfo(filename), 'in function <glTFLoader.load> file "' .. filename .. '" not found.')
+  local path = filename:match(".+/")
+  local name, extension = filename:match("([^/]+)%.(.+)$")
+  assert(love.filesystem.getInfo(filename), 'in function <glTFLoader.load> file "' .. filename .. '" not found.')
 
-    if extension == "gltf" then
-        local filedata = io_read(filename)
-        local json_data = json.decode(filedata)
-        local buffers = {}
-        for i, v in ipairs(json_data.buffers) do
-            local base64data = v.uri:match("^data:application/.*;base64,(.+)")
-            if base64data then
-                buffers[i] = love.data.decode("data", "base64", base64data)
-            else
-                buffers[i] = love.data.newByteData(io_read(path .. v.uri))
-            end
-        end
-        return json_data, buffers
-    elseif extension == "glb" then
-        local filedata = assert(io_read("data", filename))
-        return parse_glb(filedata)
-    else
-        assert(false, "gltf nor glb")
+  if extension == "gltf" then
+    local filedata = io_read(filename)
+    local json_data = json.decode(filedata)
+    local buffers = {}
+    for i, v in ipairs(json_data.buffers) do
+      local base64data = v.uri:match("^data:application/.*;base64,(.+)")
+      if base64data then
+        buffers[i] = love.data.decode("data", "base64", base64data)
+      else
+        buffers[i] = love.data.newByteData(io_read(path .. v.uri))
+      end
     end
+    return json_data, buffers
+  elseif extension == "glb" then
+    local filedata = assert(io_read("data", filename))
+    return parse_glb(filedata)
+  else
+    assert(false, "gltf nor glb")
+  end
 end
 
 return M

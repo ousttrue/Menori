@@ -1,5 +1,5 @@
 if type(jit) == "table" and jit.status() then
-    return require("ffi")
+  return require("ffi")
 else
-    return false
+  return false
 end

@@ -14,15 +14,15 @@ local Mesh = require("menori.core3d.mesh")
 
 local vertexformat
 if love._version_major > 11 then
-    vertexformat = {
-        { format = "floatvec3", name = "VertexPosition", location = 0 },
-        { format = "floatvec4", name = "VertexColor", location = 1 },
-    }
+  vertexformat = {
+    { format = "floatvec3", name = "VertexPosition", location = 0 },
+    { format = "floatvec4", name = "VertexColor", location = 1 },
+  }
 else
-    vertexformat = {
-        { "VertexPosition", "float", 3 },
-        { "VertexColor", "float", 4 },
-    }
+  vertexformat = {
+    { "VertexPosition", "float", 3 },
+    { "VertexColor", "float", 4 },
+  }
 end
 
 --- The public constructor.
@@ -32,40 +32,40 @@ end
 -- @number sy Box shape height
 -- @number sz Box shape depth
 local function BoxShape(sx, sy, sz)
-    sx = sx / 2
-    sy = sy / 2
-    sz = sz / 2
-    local vertices = {
-        { -sx, -sy, -sz, 1, 1, 1, 1 },
-        { -sx, sy, -sz, 1, 1, 1, 1 },
-        { sx, -sy, -sz, 1, 1, 1, 1 },
-        { sx, sy, -sz, 1, 1, 1, 1 },
-        { sx, -sy, sz, 1, 1, 1, 1 },
-        { sx, sy, sz, 1, 1, 1, 1 },
-        { -sx, -sy, sz, 1, 1, 1, 1 },
-        { -sx, sy, sz, 1, 1, 1, 1 },
-        { -sx, -sy, sz, 1, 1, 1, 1 },
-        { -sx, sy, sz, 1, 1, 1, 1 },
-        { -sx, -sy, -sz, 1, 1, 1, 1 },
-        { -sx, sy, -sz, 1, 1, 1, 1 },
-        { sx, -sy, -sz, 1, 1, 1, 1 },
-        { sx, sy, -sz, 1, 1, 1, 1 },
-        { sx, -sy, sz, 1, 1, 1, 1 },
-        { sx, sy, sz, 1, 1, 1, 1 },
-        { -sx, sy, -sz, 1, 1, 1, 1 },
-        { -sx, sy, sz, 1, 1, 1, 1 },
-        { sx, sy, -sz, 1, 1, 1, 1 },
-        { sx, sy, sz, 1, 1, 1, 1 },
-        { -sx, -sy, -sz, 1, 1, 1, 1 },
-        { sx, -sy, -sz, 1, 1, 1, 1 },
-        { -sx, -sy, sz, 1, 1, 1, 1 },
-        { sx, -sy, sz, 1, 1, 1, 1 },
-    }
+  sx = sx / 2
+  sy = sy / 2
+  sz = sz / 2
+  local vertices = {
+    { -sx, -sy, -sz, 1, 1, 1, 1 },
+    { -sx, sy, -sz, 1, 1, 1, 1 },
+    { sx, -sy, -sz, 1, 1, 1, 1 },
+    { sx, sy, -sz, 1, 1, 1, 1 },
+    { sx, -sy, sz, 1, 1, 1, 1 },
+    { sx, sy, sz, 1, 1, 1, 1 },
+    { -sx, -sy, sz, 1, 1, 1, 1 },
+    { -sx, sy, sz, 1, 1, 1, 1 },
+    { -sx, -sy, sz, 1, 1, 1, 1 },
+    { -sx, sy, sz, 1, 1, 1, 1 },
+    { -sx, -sy, -sz, 1, 1, 1, 1 },
+    { -sx, sy, -sz, 1, 1, 1, 1 },
+    { sx, -sy, -sz, 1, 1, 1, 1 },
+    { sx, sy, -sz, 1, 1, 1, 1 },
+    { sx, -sy, sz, 1, 1, 1, 1 },
+    { sx, sy, sz, 1, 1, 1, 1 },
+    { -sx, sy, -sz, 1, 1, 1, 1 },
+    { -sx, sy, sz, 1, 1, 1, 1 },
+    { sx, sy, -sz, 1, 1, 1, 1 },
+    { sx, sy, sz, 1, 1, 1, 1 },
+    { -sx, -sy, -sz, 1, 1, 1, 1 },
+    { sx, -sy, -sz, 1, 1, 1, 1 },
+    { -sx, -sy, sz, 1, 1, 1, 1 },
+    { sx, -sy, sz, 1, 1, 1, 1 },
+  }
 
-    return Mesh.from_primitive(vertices, {
-        vertexformat = vertexformat,
-        indices = Mesh.generate_indices(24),
-    })
+  return Mesh.from_primitive(vertices, {
+    vertexformat = vertexformat,
+    indices = Mesh.generate_indices(24),
+  })
 end
 
 return BoxShape
