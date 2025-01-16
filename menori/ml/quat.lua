@@ -31,6 +31,7 @@ local sin = math.sin
 local min = math.min
 local max = math.max
 
+---@class menori.quat
 local quat = {}
 local quat_mt = {}
 quat_mt.__index = quat_mt

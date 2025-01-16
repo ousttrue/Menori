@@ -19,67 +19,35 @@ local vec3 = ml.vec3
 local quat = ml.quat
 local bound3 = ml.bound3
 
-local _find
-local _transform_force
-
 ---@class menori.Node
--- @string[opt="node"] name Name of node.
--- Children of this node. @field children
--- @field parent Parent of this node.
--- @bool[opt=false] detach_flag Flag that is used to detach this node from its parent during the next scene update.
--- @bool[opt=true] update_flag Flag that sets whether the node is updated during the scene update pass.
--- @bool[opt=true] render_flag Flag that sets whether the node is rendered during the scene render pass.
--- @bool[opt=true] update_transform_flag Flag that sets whether the node transformations will be updated.
--- @field[readonly] local_matrix Local transformation matrix
--- @field[readonly] world_matrix World transformation matrix based on world (parent) factors.
--- @tfield[readonly] vec3 position Local position.
--- @tfield[readonly] quat rotation Local rotation.
--- @tfield[readonly] vec3 scale Local scale.
+---@name string Name of node.
+---@field children menori.Node[] Children of this node
+---@field parent menori.Node? Parent of this node.
+---@field detach_flag boolean Flag that is used to detach this node from its parent during the next scene update.
+---@field update_flag boolean Flag that sets whether the node is updated during the scene update pass.
+---@field render_flag boolean Flag that sets whether the node is rendered during the scene render pass.
+---@field calculate_local_transform_flag boolean Flag that sets whether the node transformations will be updated.
+---@field local_matrix menori.mat4 Local transformation matrix
+---@field world_matrix menori.mat4 World transformation matrix based on world (parent) factors.
+---@field joint_matrix menori.mat4
+---@field position menori.vec3  Local position.
+---@field rotation menori.quat Local rotation.
+---@field scale menori.vec3 Local scale.
+---@field extras table?
+---@field meshes menori.Mesh[]?
+---@field material menori.Material?
 local Node = {}
-
 Node.__index = Node
 Node.layer = 0
 
----@param data menori.GltfData
----@return menori.Node
-local function create_nodes(data, i)
-  -- local exist = self.nodes[i]
-  -- if exist then
-  --   return exist
-  -- end
-  local v = data.gltf.nodes[i]
-  local t = vec3()
-  local r = quat(0, 0, 0, 1)
-  local s = vec3(1)
-  if v.translation or v.rotation or v.scale then
-    t:set(v.translation or { 0, 0, 0 })
-    r:set(v.rotation or { 0, 0, 0, 1 })
-    s:set(v.scale or { 1, 1, 1 })
-  elseif v.matrix then
-    mat4(v.matrix):decompose(t, r, s)
-  end
-
-  local node = Node.new()
-
-  node.extras = v.extras
-
-  node:set_position(t)
-  node:set_rotation(r)
-  node:set_scale(s)
-  node.name = v.name or node.name
-
-  return node
-end
-
 --- The public constructor.
--- @string[opt='node'] name Node name.
+---@param name string? name Node name.
 ---@return menori.Node
 function Node.new(name)
-  local self = setmetatable({}, Node)
-
-  self.children = {}
-  self.parent = nil
-  self.name = name or "node"
+  local self = setmetatable({
+    name = name or "node",
+    children = {},
+  }, Node)
 
   self.detach_flag = false
   self.update_flag = true
@@ -88,7 +56,6 @@ function Node.new(name)
 
   self.local_matrix = mat4()
   self.world_matrix = mat4()
-
   self.joint_matrix = mat4()
 
   self._transform_flag = true
@@ -100,42 +67,38 @@ function Node.new(name)
   return self
 end
 
+---@param v gltf.Node
+---@return menori.Node
+function Node.from_gltf_node(v)
+  local t = vec3()
+  local r = quat(0, 0, 0, 1)
+  local s = vec3(1)
+  if v.translation or v.rotation or v.scale then
+    t:set(v.translation or { 0, 0, 0 })
+    r:set(v.rotation or { 0, 0, 0, 1 })
+    s:set(v.scale or { 1, 1, 1 })
+  elseif v.matrix then
+    mat4(v.matrix):decompose(t, r, s)
+  end
+
+  local node = Node.new(v.name)
+  node.extras = v.extras
+  node:set_position(t)
+  node:set_rotation(r)
+  node:set_scale(s)
+  return node
+end
+
 ---comment
 ---@param data menori.GltfData
 ---@return menori.Node[]
 function Node.load(data)
   local nodes = {}
-  for node_index = 1, #data.gltf.nodes do
-    local node = create_nodes(data, node_index)
+  for _, gltf_node in ipairs(data.gltf.nodes) do
+    local node = Node.from_gltf_node(gltf_node)
     table.insert(nodes, node)
   end
   return nodes
-end
-
---- Clone an object.
--- @treturn menori.Node object
-function Node:clone(new_object)
-  new_object = new_object or Node()
-  new_object.parent = self.parent
-  new_object.name = self.name
-
-  new_object.detach_flag = self.detach_flag
-  new_object.update_flag = self.update_flag
-  new_object.render_flag = self.render_flag
-  new_object.calculate_local_transform_flag = self.calculate_local_transform_flag
-
-  new_object.local_matrix:copy(self.local_matrix)
-  new_object.world_matrix:copy(self.world_matrix)
-
-  new_object.position:set(self.position)
-  new_object.rotation:set(self.rotation)
-  new_object.scale:set(self.scale)
-
-  for _, v in ipairs(self.children) do
-    local child = v:clone()
-    new_object:attach(child)
-  end
-  return new_object
 end
 
 --- Set Node local position.
@@ -220,35 +183,35 @@ function Node:forward(retvalue)
 end
 
 function Node:_recursive_get_aabb(t)
-  if self.calculate_aabb then
-    local a = t
-    local b = self:calculate_aabb()
+  if self.mehshes then
+    for _, mesh in ipairs(self.meshes) do
+      local a = t
+      local b = mesh:calculate_aabb()
 
-    if a.min.x > b.min.x then
-      a.min.x = b.min.x
-    end
-    if a.min.y > b.min.y then
-      a.min.y = b.min.y
-    end
-    if a.min.z > b.min.z then
-      a.min.z = b.min.z
-    end
+      if a.min.x > b.min.x then
+        a.min.x = b.min.x
+      end
+      if a.min.y > b.min.y then
+        a.min.y = b.min.y
+      end
+      if a.min.z > b.min.z then
+        a.min.z = b.min.z
+      end
 
-    if a.max.x < b.max.x then
-      a.max.x = b.max.x
-    end
-    if a.max.y < b.max.y then
-      a.max.y = b.max.y
-    end
-    if a.max.z < b.max.z then
-      a.max.z = b.max.z
+      if a.max.x < b.max.x then
+        a.max.x = b.max.x
+      end
+      if a.max.y < b.max.y then
+        a.max.y = b.max.y
+      end
+      if a.max.z < b.max.z then
+        a.max.z = b.max.z
+      end
     end
   end
 
-  if #self.children > 0 then
-    for i, v in ipairs(self.children) do
-      v:_recursive_get_aabb(t)
-    end
+  for _, v in ipairs(self.children) do
+    v:_recursive_get_aabb(t)
   end
   return t
 end
@@ -258,6 +221,8 @@ end
 function Node:get_aabb()
   return self:_recursive_get_aabb(bound3(vec3(math.huge), vec3(-math.huge)))
 end
+
+local _transform_force = false
 
 local function _recursive_update_transform(node)
   if node.parent then
