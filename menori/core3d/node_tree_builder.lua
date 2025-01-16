@@ -21,6 +21,7 @@ local ml = require("menori.ml")
 local mat4 = ml.mat4
 local vec3 = ml.vec3
 local quat = ml.quat
+local Texture = require("menori.core3d.texture")
 
 local function getFFIPointer(data)
     if data.getFFIPointer then
@@ -117,83 +118,6 @@ function NodeTreeBuilder:create_nodes(i)
     end
 
     return node
-end
-
----@param value integer
----@return "nearest"|"linear"|"linear"
-local function parse_filter(value)
-    if value == 9728 then
-        return "nearest"
-    elseif value == 9729 then
-        return "linear"
-    else
-        return "linear"
-    end
-end
-
-local function parse_wrap(value)
-    if value == 33071 then
-        return "clamp"
-    elseif value == 33648 then
-        return "mirroredrepeat"
-    elseif value == 10497 then
-        return "repeat"
-    else
-        return "repeat"
-    end
-end
-
----@param texture gltf.Texture
----@return table
-function NodeTreeBuilder:load_image(texture)
-    local source = texture.source + 1
-    local MSFT_texture_dds = texture.extensions and texture.extensions.MSFT_texture_dds
-    if MSFT_texture_dds then
-        source = MSFT_texture_dds.source + 1
-    end
-
-    local image = self.data.gltf.images[source]
-    local image_raw_data
-    if image.uri then
-        local base64data = image.uri:match("^data:image/.*;base64,(.+)")
-        if base64data then
-            image_raw_data = love.data.decode("data", "base64", base64data)
-        else
-            local image_filename = path .. image.uri
-            image_raw_data = love.filesystem.newFileData(io_read(image_filename), image_filename)
-        end
-    else
-        local buffer_view = self.data.gltf.bufferViews[image.bufferView + 1]
-
-        local data = self.data.buffers[buffer_view.buffer + 1]
-
-        local offset = buffer_view.byteOffset or 0
-        local length = buffer_view.byteLength
-
-        image_raw_data = love.data.newDataView(data, offset, length)
-    end
-
-    local image_data
-    if not MSFT_texture_dds then
-        image_data = love.image.newImageData(image_raw_data)
-    else
-        image_data = love.image.newCompressedData(image_raw_data)
-    end
-
-    local image_source
-    if love._version_major > 11 then
-        image_source = love.graphics.newTexture(image_data, {
-            debugname = image.name,
-            linear = true,
-            mipmaps = true,
-        })
-    else
-        image_source = love.graphics.newImage(image_data)
-    end
-    image_data:release()
-    return {
-        source = image_source,
-    }
 end
 
 local component_types = {
@@ -330,28 +254,6 @@ else
     end
 end
 
-local ffi_indices_types = {
-    [5121] = "unsigned char*",
-    [5123] = "unsigned short*",
-    [5125] = "unsigned int*",
-}
-
-local function get_unpack_type(component_type)
-    if component_type == 5120 then
-        return "b"
-    elseif component_type == 5121 then
-        return "B"
-    elseif component_type == 5122 then
-        return "h"
-    elseif component_type == 5123 then
-        return "H"
-    elseif component_type == 5125 then
-        return "I4"
-    elseif component_type == 5126 then
-        return "f"
-    end
-end
-
 ---@param attributes_array table<string, integer>
 function NodeTreeBuilder:get_attributes(attributes_array)
     local attributes = {}
@@ -379,61 +281,6 @@ function NodeTreeBuilder:get_attributes(attributes_array)
     return attributes
 end
 
----@param v integer
----@return love.Data|number[]
-function NodeTreeBuilder:get_indices_content(v)
-    local buffer = self.data:get_buffer(v)
-    local element_size = buffer.component_size * buffer.type_elements_count
-
-    local min = buffer.min and buffer.min[1] or 0
-    local max = buffer.max and buffer.max[1] or 0
-
-    local uint8 = element_size < 2
-
-    local temp_data
-    if ffi and not uint8 then
-        temp_data = love.data.newByteData(buffer.count * element_size)
-        local temp_data_pointer = ffi.cast("char*", getFFIPointer(temp_data))
-        local data = ffi.cast("char*", getFFIPointer(buffer.data)) + buffer.offset
-
-        for i = 0, buffer.count - 1 do
-            ffi.copy(temp_data_pointer + i * element_size, data + i * buffer.stride, element_size)
-            local value = ffi.cast(ffi_indices_types[buffer.component_type], temp_data_pointer + i * element_size)[0]
-            if value > max then
-                max = value
-            end
-            if value < min then
-                min = value
-            end
-        end
-
-        for i = 0, buffer.count - 1 do
-            local ptr = ffi.cast(ffi_indices_types[buffer.component_type], temp_data_pointer + i * element_size)
-            ptr[0] = ptr[0] - min
-        end
-    else
-        temp_data = {}
-        local data_string = buffer.data:getString()
-        local unpack_type = get_unpack_type(buffer.component_type)
-
-        for i = 0, buffer.count - 1 do
-            local pos = buffer.offset + i * element_size + 1
-            local value = love.data.unpack(unpack_type, data_string, pos)
-            temp_data[i + 1] = value + 1
-            if value > max then
-                max = value
-            end
-            if value < min then
-                min = value
-            end
-        end
-
-        for i = 0, buffer.count - 1 do
-            temp_data[i + 1] = temp_data[i + 1] - min
-        end
-    end
-    return temp_data, element_size, min, max
-end
 
 local attribute_aliases = {
     ["POSITION"] = "VertexPosition",
@@ -507,7 +354,7 @@ function NodeTreeBuilder:init_mesh(mesh)
     for j, primitive in ipairs(mesh.primitives) do
         local indices, indices_tsize
         if primitive.indices then
-            indices, indices_tsize = self:get_indices_content(primitive.indices)
+            indices, indices_tsize = self.data:get_indices_content(primitive.indices)
         end
 
         local length = 0
@@ -597,41 +444,7 @@ end
 ---@return table An array of scenes, where each scene is a menori.Node object
 ---@return table
 function NodeTreeBuilder:create()
-    local samplers = {}
-    if self.data.gltf.samplers then
-        for _, v in ipairs(self.data.gltf.samplers) do
-            table.insert(samplers, {
-                magFilter = parse_filter(v.magFilter),
-                minFilter = parse_filter(v.minFilter),
-                wrapS = parse_wrap(v.wrapS),
-                wrapT = parse_wrap(v.wrapT),
-            })
-        end
-    end
-
-    local images = {}
-    local textures = {}
-    if self.data.gltf.textures then
-        for _, texture in ipairs(self.data.gltf.textures) do
-            local sampler = samplers[texture.sampler + 1]
-            local image = images[texture.source + 1]
-
-            if not image then
-                image = self:load_image(texture)
-                images[texture.source + 1] = image
-            end
-
-            table.insert(textures, {
-                image = image,
-                sampler = sampler,
-            })
-
-            if sampler then
-                image.source:setFilter(sampler.magFilter, sampler.minFilter)
-                image.source:setWrap(sampler.wrapS, sampler.wrapT)
-            end
-        end
-    end
+    local textures = Texture.load(self.data)
 
     ---@type menori.gltf.Skin
     local skins = {}
