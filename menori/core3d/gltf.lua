@@ -43,33 +43,20 @@ local json = require("libs.rxijson.json")
 ---@field byteStride integer?
 ---@field target integer?
 
----@enum gltf.Accessor_ComponentType
-local GltfAccessor_ComponentType = {
-    BYTE = 5120,
-    UBYTE = 5121,
-    SHORT = 5122,
-    USHORT = 5123,
-    UINT = 5125,
-    FLOAT = 5126,
-}
+---BYTE = 5120
+---UBYTE = 5121
+---SHORT = 5122
+---USHORT = 5123
+---UINT = 5125
+---FLOAT = 5126
+---@alias gltf.Accessor_ComponentType 5120|5121|5122|5123|5125|5126
 
----@enum gltf.Accessor_Type
-local GltfAccessor_Type = {
-    SCALAR = "SCALAR",
-    VEC2 = "VEC2",
-    VEC3 = "VEC3",
-    VEC4 = "VEC4",
-    MAT2 = "MAT2",
-    MAT3 = "MAT3",
-    MAT4 = "MAT4",
-}
+---@alias gltf.Accessor_Type "SCALAR"|"VEC2"|"VEC3"|"VEC4"|"MAT2"|"MAT3"|"MAT4"
 
----@enum gltf.Sampler_Wrap
-local Sampler_Wrap = {
-    CLAMP_TO_EDGE = 33071,
-    MIRRORED_REPEAT = 33648,
-    REPEAT = 10497,
-}
+---CLAMP_TO_EDGE = 33071
+---MIRRORED_REPEAT = 33648
+---REPEAT = 10497
+---@alias gltf.Sampler_Wrap 33071|33648|10497
 
 ---https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/accessor.schema.json
 ---@class gltf.Accessor: gltf.ChildOfRootProperty
@@ -83,9 +70,21 @@ local Sampler_Wrap = {
 ---@field min number[]?
 ---@field sparse table?
 
+---9728:NEAREST
+---9729:LINEAR
+---@alias gltf.MagFilterType 9728|9729
+
+---9728:NEAREST
+---9729:LINEAR
+---9984:NEAREST_MIPMAP_NEAREST
+---9985:LINEAR_MIPMAP_NEAREST
+---9986:NEAREST_MIPMAP_LINEAR
+---9987:LINEAR_MIPMAP_LINEAR
+---@alias gltf.MinFilterType 9728|9729|9984|9985|9986|9987
+
 ---@class gltf.Sampler: gltf.ChildOfRootProperty
----@field magFilter integer [9728:NEAREST, 9729:LINEAR]
----@field minFilter integer [9728:NEAREST, 9729:LINEAR, 9984:NEAREST_MIPMAP_NEAREST, 9985:LINEAR_MIPMAP_NEAREST, 9986:NEAREST_MIPMAP_LINEAR, 9987:LINEAR_MIPMAP_LINEAR]
+---@field magFilter gltf.MagFilterType
+---@field minFilter gltf.MinFilterType
 ---@field wrapS gltf.Sampler_Wrap
 ---@field wrapT gltf.Sampler_Wrap
 
@@ -108,13 +107,15 @@ local Sampler_Wrap = {
 ---@field roughnessFactor number?
 ---@field metallicRoughnessTexture gltf.TextureInfo?
 
+---@alias gltf.AlphaMode "OPAQUE"|"MASK"|"BLEND"
+
 ---@class gltf.Material: gltf.ChildOfRootProperty
 ---@field pbrMetallicRoughness gltf.PbrMetallicRoughness?
 ---@field normalTexture gltf.TextureInfo?
 ---@field occlusionTexture gltf.TextureInfo?
 ---@field emissiveTexture gltf.TextureInfo?
 ---@field emissiveFactor number[]?
----@field alphaMode string ["OPAQUE", "MASK", "BLEND"]?
+---@field alphaMode gltf.AlphaMode?
 ---@field alphaCutoff number?
 ---@field doubleSided boolean?
 
@@ -161,16 +162,20 @@ local Sampler_Wrap = {
 ---@class gltf.Scene: gltf.ChildOfRootProperty
 ---@field nodes integer[]?
 
+---@alias gltf.AnimationInterpolationType "LINEAR"|"CUBE"|"STEP"
+
 --- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/animation.sampler.schema.json
 ---@class gltf.AnimationSampler
 ---@field input integer The index of an accessor containing keyframe timestamps.
----@field interplocation "LINEAR"|"CUBE"|"STEP"
+---@field interpolation gltf.AnimationInterpolationType
 ---@field output integer The index of an accessor, containing keyframe output values.
+
+---@alias gltf.AnimationPath "translation"|"rotation"|"scale"|"weights"
 
 ---https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/animation.channel.target.schema.json
 ---@class gltf.AnimationChannelTarget
 ---@field node integer?
----@field path "translation"|"rotation"|"scale"|"weights"
+---@field path gltf.AnimationPath
 
 --- https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/animation.channel.schema.json
 ---@class gltf.AnimationChannel
