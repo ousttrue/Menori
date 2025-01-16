@@ -61,6 +61,10 @@ function Accessor:get_data_array()
     return array
 end
 
+function Accessor:getFFIPointer()
+    return getFFIPointer(self.data)
+end
+
 local ffi_indices_types = {
     [5121] = "unsigned char*",
     [5123] = "unsigned short*",
