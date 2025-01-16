@@ -27,7 +27,7 @@ local function alpha_mode_comp(a, b)
 end
 
 local function default_filter(node, scene, environment)
-    node:render(scene, environment)
+    node.mesh:render(node.world_matrix, node.material, environment, node.joints)
 end
 
 ---@class menori.Scene
@@ -79,7 +79,7 @@ function Scene:render_nodes(node, environment, renderstates, filter)
                 n:update_transform()
             end
 
-            if n.render then
+            if n.mesh then
                 table.insert(self.list_drawable_nodes, n)
             end
 

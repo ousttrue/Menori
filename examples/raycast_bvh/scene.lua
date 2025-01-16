@@ -35,7 +35,9 @@ local function debug_bvh(tree, aabb_root)
             material.mesh_cull_mode = "none"
             material.alpha_mode = "BLEND"
             material:set("baseColor", { 1.0, 1.0, 1.0, 1.0 })
-            local t = menori.ModelNode.new(boxshape, material)
+            local t = menori.Node.new()
+            t.mesh = boxshape
+            t.material = material
             t:set_position(node.extents:center())
             aabb_root:attach(t)
         end
@@ -62,7 +64,9 @@ function RaycastBvhScene.new()
     local boxshape = menori.BoxShape(0.2, 0.2, 0.2)
     local material = menori.Material.new()
     material:set("baseColor", { 1.0, 1.0, 0.0, 1.0 })
-    self.box = menori.ModelNode.new(boxshape, material)
+    self.box = menori.Node.new()
+    self.box.mesh = boxshape
+    self.box.material = material
     self.root_node:attach(self.box)
 
     local gltf, buffers = menori.glTFLoader.parse("examples/assets/pokemon_firered_-_players_room.glb")

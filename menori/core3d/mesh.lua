@@ -24,6 +24,18 @@ local lg = love.graphics
 local Mesh = {}
 Mesh.__index = Mesh
 
+---
+-- Own copy of the Material that is bound to the model.
+-- @field material
+
+---
+-- The menori.Mesh object that is bound to the model.
+-- @field mesh
+
+---
+-- Model color. (Deprecated)
+-- @field color
+
 local default_template = { 1, 2, 3, 2, 4, 3 }
 
 local vertexformat
@@ -531,6 +543,94 @@ function Mesh:apply_matrix(matrix)
 
         mesh:setVertexAttribute(j, pindex, temp_v3.x, temp_v3.y, temp_v3.z)
     end
+end
+
+--- Calculate AABB by applying the current transformations.
+---@param world_matrix menori.mat4
+-- @tparam[opt=1] number index The index of the primitive in the mesh.
+-- @treturn menori.ml.bound3 object
+function Mesh:calculate_aabb(world_matrix)
+    local bound = self.bound
+    local min = bound.min
+    local max = bound.max
+    -- self:recursive_update_transform()
+    local m = world_matrix
+    local t = {
+        m:multiply_vec3(vec3(min.x, min.y, min.z)),
+        m:multiply_vec3(vec3(max.x, min.y, min.z)),
+        m:multiply_vec3(vec3(min.x, min.y, max.z)),
+
+        m:multiply_vec3(vec3(min.x, max.y, min.z)),
+        m:multiply_vec3(vec3(max.x, max.y, min.z)),
+        m:multiply_vec3(vec3(min.x, max.y, max.z)),
+
+        m:multiply_vec3(vec3(max.x, min.y, max.z)),
+        m:multiply_vec3(vec3(max.x, max.y, max.z)),
+    }
+
+    local aabb = bound3(vec3(math.huge), vec3(-math.huge))
+    for i = 1, #t do
+        local v = t[i]
+        if aabb.min.x > v.x then
+            aabb.min.x = v.x
+        elseif aabb.max.x < v.x then
+            aabb.max.x = v.x
+        end
+        if aabb.min.y > v.y then
+            aabb.min.y = v.y
+        elseif aabb.max.y < v.y then
+            aabb.max.y = v.y
+        end
+        if aabb.min.z > v.z then
+            aabb.min.z = v.z
+        elseif aabb.max.z < v.z then
+            aabb.max.z = v.z
+        end
+    end
+
+    return aabb
+end
+
+--- Draw a ModelNode object on the screen.
+-- This function will be called implicitly in the hierarchy when a node is drawn with scene:render_nodes()
+---@param world_matrix menori.mat4
+---@param material menori.Material
+---@param environment menori.Environment object that is used when drawing the model
+---@param joints menori.Node[]?
+function Mesh:render(world_matrix, material, environment, joints)
+    local shader = material.shader
+    environment:apply_shader(shader)
+    shader:send("m_model", "column", world_matrix.data)
+
+    if joints then
+        -- if self.skeleton_node then
+        --       shader:send('m_skeleton', self.skeleton_node.world_matrix.data)
+        -- end
+
+        local size = math.max(math.ceil(math.sqrt(#joints * 4) / 4) * 4, 4)
+        data = love.data.newByteData(size * size * 4 * 4)
+
+        local matrix_bytesize = 16 * 4
+        for i = 1, #joints do
+            local node = joints[i]
+
+            if ffi then
+                local ptr = ffi.cast("char*", data:getFFIPointer()) + (i - 1) * matrix_bytesize
+                ffi.copy(ptr, node.joint_matrix.e + 1, matrix_bytesize)
+            else
+                data:setFloat((i - 1) * matrix_bytesize, node.joint_matrix.e)
+            end
+        end
+
+        local joints_texture_data = love.image.newImageData(size, size, "rgba32f", data)
+        joints_texture = love.graphics.newImage(joints_texture_data)
+
+        shader:send("joints_texture", joints_texture)
+    end
+
+    -- local c = self.color
+    -- love.graphics.setColor(c.x, c.y, c.z, c.w)
+    self:draw(material)
 end
 
 return Mesh

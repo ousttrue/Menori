@@ -14,7 +14,6 @@ Module for building scene nodes from a loaded gltf format.
 local Material = require("menori.core3d.material")
 local Mesh = require("menori.core3d.mesh")
 local Node = require("menori.node")
-local ModelNode = require("menori.core3d.model_node")
 local Aninmation = require("menori.core3d.animation")
 local ShaderUtils = require("menori.shaders.utils")
 local ml = require("menori.ml")
@@ -72,7 +71,9 @@ function NodeTreeBuilder:create_nodes(i)
       if m.material_index then
         material = self.materials[m.material_index + 1]
       end
-      local model_node = ModelNode.new(m, material)
+      local model_node = Node.new()
+      model_node.mesh = m
+      model_node.material = material:clone()
       if v.skin then
         model_node.material.shader = ShaderUtils.shaders["default_mesh_skinning"]
       else
