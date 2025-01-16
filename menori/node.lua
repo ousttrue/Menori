@@ -40,6 +40,37 @@ local Node = {}
 Node.__index = Node
 Node.layer = 0
 
+---@param data menori.GltfData
+---@return menori.Node
+local function create_nodes(data, i)
+  -- local exist = self.nodes[i]
+  -- if exist then
+  --   return exist
+  -- end
+  local v = data.gltf.nodes[i]
+  local t = vec3()
+  local r = quat(0, 0, 0, 1)
+  local s = vec3(1)
+  if v.translation or v.rotation or v.scale then
+    t:set(v.translation or { 0, 0, 0 })
+    r:set(v.rotation or { 0, 0, 0, 1 })
+    s:set(v.scale or { 1, 1, 1 })
+  elseif v.matrix then
+    mat4(v.matrix):decompose(t, r, s)
+  end
+
+  local node = Node.new()
+
+  node.extras = v.extras
+
+  node:set_position(t)
+  node:set_rotation(r)
+  node:set_scale(s)
+  node.name = v.name or node.name
+
+  return node
+end
+
 --- The public constructor.
 -- @string[opt='node'] name Node name.
 ---@return menori.Node
@@ -67,6 +98,18 @@ function Node.new(name)
   self.scale = vec3(1)
 
   return self
+end
+
+---comment
+---@param data menori.GltfData
+---@return menori.Node[]
+function Node.load(data)
+  local nodes = {}
+  for node_index = 1, #data.gltf.nodes do
+    local node = create_nodes(data, node_index)
+    table.insert(nodes, node)
+  end
+  return nodes
 end
 
 --- Clone an object.

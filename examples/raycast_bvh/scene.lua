@@ -36,7 +36,7 @@ local function debug_bvh(tree, aabb_root)
       material.alpha_mode = "BLEND"
       material:set("baseColor", { 1.0, 1.0, 1.0, 1.0 })
       local t = menori.Node.new()
-      t.mesh = boxshape
+      t.meshes = { boxshape }
       t.material = material
       t:set_position(node.extents:center())
       aabb_root:attach(t)
@@ -65,7 +65,7 @@ function RaycastBvhScene.new()
   local material = menori.Material.new()
   material:set("baseColor", { 1.0, 1.0, 0.0, 1.0 })
   self.box = menori.Node.new()
-  self.box.mesh = boxshape
+  self.box.meshes = { boxshape }
   self.box.material = material
   self.root_node:attach(self.box)
 
@@ -75,8 +75,8 @@ function RaycastBvhScene.new()
   local scene = builder.scenes[1]
   -- Create BVH for each mesh node.
   scene:traverse(function(node)
-    if node.mesh then
-      node.bvh = ml.bvh(node.mesh, 10, node.world_matrix)
+    if node.meshes then
+      node.bvh = ml.bvh(node.meshes[1], 10, node.world_matrix)
       debug_bvh(node.bvh, self.aabb_root)
     end
   end)

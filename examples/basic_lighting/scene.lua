@@ -67,7 +67,7 @@ function BasicLightingScene.new()
   -- Callback for each scene in the gltf.
   -- Create AABB for each node and add it to the aabb_root node.
   scene:traverse(function(node)
-    if node.mesh then
+    if node.meshes then
       node.material.shader = lighting_shader
 
       --local bound = node:get_aabb()

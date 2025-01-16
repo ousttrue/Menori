@@ -100,7 +100,7 @@ function SsaoScene.new()
   builder:create()
   local scene = builder.scenes[1]
   scene:traverse(function(node)
-    if node.mesh then
+    if node.meshes then
       -- use deferred shader
       if node.skeleton_node then
         node.material.shader = menori.ShaderUtils.shaders["deferred_mesh_skinning"]
