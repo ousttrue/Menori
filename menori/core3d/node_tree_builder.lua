@@ -117,30 +117,18 @@ function NodeTreeBuilder:create()
   self.materials = Material.load(self.data)
   self.meshes = Mesh.load(self.data)
 
-  ---@type menori.gltf.Skin
-  local skins = {}
-  if self.data.gltf.skins then
-    for _, v in ipairs(self.data.gltf.skins) do
-      local buffer = self.data:get_buffer(v.inverseBindMatrices)
-      table.insert(skins, {
-        inverse_bind_matrices = buffer:get_data_array(),
-        joints = v.joints,
-        skeleton = v.skeleton,
-      })
-    end
-  end
-
   for node_index = 1, #self.data.gltf.nodes do
     local node = self:create_nodes(node_index)
-    local skin = self.data.gltf.nodes[node_index].skin
-    if skin then
-      skin = skins[skin + 1]
+    local skin_index = self.data.gltf.nodes[node_index].skin
+    if skin_index then
+      local skin = self.data.gltf.skins[skin_index + 1]
       node.joints = {}
       if skin.skeleton then
         node.skeleton_node = self:create_nodes(skin.skeleton + 1)
       end
 
-      local matrices = skin.inverse_bind_matrices
+      local matrices = self.data:get_buffer(skin.inverseBindMatrices):get_data_array()
+      -- local matrices = skin.inverse_bind_matrices
       for i, joint in ipairs(skin.joints) do
         local joint_node = self:create_nodes(joint + 1)
         joint_node.inverse_bind_matrix = mat4(matrices[i])
