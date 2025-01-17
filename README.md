@@ -17,66 +17,101 @@ You can generate documentation using `ldoc -c menori/docs/config.ld -o index .`
 
 - type annotation: https://luals.github.io/wiki/annotations/
 
-## Usage Example
+### luarock development
 
-```lua
-local menori = require 'menori'
-
-local ml = menori.ml
-local vec3 = ml.vec3
-local quat = ml.quat
-
-function love.load()
-	local _, _, w, h = menori.app:get_viewport()
-	camera = menori.PerspectiveCamera(60, w/h, 0.5, 1024)
-	environment = menori.Environment(camera)
-
-	root_node = menori.Node()
-
-	local gltf = menori.glTFLoader.load('examples/assets/etrian_odyssey_3_monk.glb')
-	local scenes = menori.NodeTreeBuilder.create(gltf, function (scene, builder)
-		animations = menori.glTFAnimations(builder.animations)
-		animations:set_action(1)
-
-		scene:traverse(function (node)
-			if node.mesh then
-				node.material:set("baseColor", {0.85, 0.95, 1.0, 1})
-			end
-		end)
-      end)
-
-	root_node:attach(scenes[1])
-end
-
-local scene = menori.Scene()
-
-function love.draw()
-	love.graphics.clear(0.3, 0.25, 0.2)
-	scene:render_nodes(root_node, environment, {
-		node_sort_comp = menori.Scene.alpha_mode_comp
-	})
-
-      love.graphics.print(love.timer.getFPS(), 10, 10)
-end
-
-function love.update(dt)
-	scene:update_nodes(root_node, environment)
-
-	local q = quat.from_euler_angles(0, math.rad(20), math.rad(10)) * vec3.unit_z * 2.0
-	local v = vec3(0, 0.5, 0)
-	camera.center = v
-	camera.eye = q + v
-	camera:update_view_matrix()
-
-	animations:update(dt)
-
-	if love.keyboard.isDown('escape') then
-		love.event.quit()
-	end
-end
+```
+Menori
+  + luarocks
+    + bin
+      + activate.ps1
+      + lua.exe
 ```
 
-See `main.lua` for a more complete example.
+```sh
+> hererocks -j 2.1 --luarocks latest luarocks
+> rm -rf $env:APPDATA\luarocks
+> .\luarocks\bin\activate.ps1
+> lua -v
+LuaJIT 2.1.0-beta3 -- Copyright (C) 2005-2017 Mike Pall. http://luajit.org/
+```
+
+```lua
+-- luarocks\luarocks\config-5.1.lua
+rocks_trees = {
+    -- remove user
+    { name = [[system]],
+         root    = [[PATH_TO_MENORI\luarocks\]],
+    },
+}
+variables = {
+    MSVCRT = 'VCRUNTIME140',
+    LUALIB = 'lua51.lib',
+}
+verbose = false   -- set to 'true' to enable verbose output
+-- vs version
+cmake_generator = "Visual Studio 17 2022"
+```
+
+#### setup local love2d
+
+```sh
+> git clone https://github.com/love2d/megasource megasource
+> git clone https://github.com/love2d/love megasource/libs/love
+> cd megasource
+megasource> luarocks write_rockspec
+```
+
+```lua
+-- megasource\megasource-dev-1.rockspec
+package = "megasource"
+version = "dev-1"
+source = {
+  url = "...",
+}
+description = {
+  summary = "It is currently only officially supported on Windows, but may also work on macOS.",
+  detailed =
+  "It is currently only officially supported on Windows, but may also work on macOS. It could certainly also work on Linux, but good package managers makes megasource less relevant there.",
+  homepage = "https://github.com/love2d/megasource",
+  license = "*** please specify a license ***",
+}
+build = {
+  type = "cmake",
+  variables = {
+    -- find_package (LuaJIT)
+    LUA_LIBDIR = "$(LUA_LIBDIR)",
+    LUA_INCDIR = "$(LUA_INCDIR)",
+    LUA_LIBFILE = "$(LUALIB)",
+    LUAJIT_DIR = "$(LUA_DIR)",
+    LUA = "$(LUA)",
+    -- install destination
+    CMAKE_INSTALL_PREFIX = "prefix",
+    -- CMAKE_INSTALL_PREFIX = "$(LIBDIR)",
+  },
+  install = {
+    lib = {
+      "prefix/love.dll",
+      "prefix/OpenAL32.dll",
+      "prefix/SDL3.dll",
+    },
+    bin = {
+      "prefix/love.exe",
+    },
+  },
+}
+```
+
+```sh
+megasource> luarocks make
+Error: failed deploying files. The following files were not installed:
+luarocks\/bin/OpenAL32.dll.bat
+luarocks\/bin/SDL3.dll.bat
+megasource> cd ..
+> fd -I dll .\luarocks\
+.\luarocks\lib\lua\5.1\OpenAL32.dll
+.\luarocks\lib\lua\5.1\SDL3.dll
+.\luarocks\lib\lua\5.1\love.dll
+```
 
 ## License
 

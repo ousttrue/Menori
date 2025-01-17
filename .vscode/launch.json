@@ -9,11 +9,15 @@
             "type": "lua-local",
             "request": "launch",
             "program": {
-                "command": "${env:LOVE_BIN}/love.exe"
+                "command": "${workspaceFolder}/luarocks/bin/love.exe"
             },
             "args": [
                 "${workspaceFolder}"
-            ]
+            ],
+            "env": {
+                "PATH": "${env:PATH};${workspaceFolder}/luarocks/lib/lua/5.1",
+                "LUAC_PATH": "${workspaceFolder}/luarocks/lib/lua/5.1/?.dll",
+            }
         },
         {
             "name": "Debug Lua Interpreter",
@@ -21,7 +25,11 @@
             "request": "launch",
             "program": {
                 "lua": "${workspaceFolder}/luarocks/bin/lua.exe",
-                "file": "launch.lua"
+                "file": "love_run.lua"
+            },
+            "env": {
+                "PATH": "${env:PATH};${workspaceFolder}/luarocks/lib/lua/5.1",
+                "LUAC_PATH": "${workspaceFolder}/luarocks/lib/lua/5.1/?.dll",
             }
         },
     ]
