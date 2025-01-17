@@ -113,6 +113,13 @@ megasource> cd ..
 .\luarocks\lib\lua\5.1\love.dll
 ```
 
+### cimgui
+
+https://codeberg.org/apicici/cimgui-love
+
+- cimgui/init.lua
+- dll => luarocks/bin/cimgui.dll (any of PATH enviroment)
+
 ## License
 
 MIT

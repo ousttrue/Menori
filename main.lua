@@ -1,6 +1,8 @@
-if os.getenv "LOCAL_LUA_DEBUGGER_VSCODE" == "1" then
+if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
   require("lldebugger").start()
 end
+
+local imgui = require("cimgui") -- cimgui is the folder containing the Lua module (the "src" folder in the git repository)
 
 ---@type menori.Scene[]
 local scenes = {}
@@ -22,6 +24,8 @@ local accumulator = 0.0
 local tick_period = 1.0 / 60.0
 
 function love.load()
+  imgui.love.Init() -- or imgui.love.Init("RGBA32") or imgui.love.Init("Alpha8")
+
   table.insert(scenes, require("examples.minimal.scene").new())
   table.insert(scenes, require("examples.basic_lighting.scene").new())
   table.insert(scenes, require("examples.SSAO.scene").new())
@@ -47,10 +51,20 @@ function love.draw()
   end
   love.graphics.print(prev_str, 10, h - 30)
   love.graphics.print(next_str, w - font:getWidth(next_str) - 10, h - 30)
+
+  -- example window
+  imgui.ShowDemoWindow()
+
+  -- code to render imgui
+  imgui.Render()
+  imgui.love.RenderDrawLists()
 end
 
 ---@param dt number delta time seconds
 function love.update(dt)
+  imgui.love.Update(dt)
+  imgui.NewFrame()
+
   -- update time
   accumulator = accumulator + dt
   local steps = math.floor(accumulator / tick_period)
@@ -76,9 +90,24 @@ end
 ---@param x number
 ---@param y number
 function love.wheelmoved(x, y)
-  local current_scene = scenes[scene_iterator]
-  if current_scene then
-    current_scene:on_wheelmoved(x, y)
+  imgui.love.WheelMoved(x, y)
+  if not imgui.love.GetWantCaptureMouse() then
+    local current_scene = scenes[scene_iterator]
+    if current_scene then
+      current_scene:on_wheelmoved(x, y)
+    end
+  end
+end
+
+---@param key string
+---@param scancode integer
+function love.keypressed(key, scancode)
+  imgui.love.KeyPressed(key)
+  if not imgui.love.GetWantCaptureKeyboard() then
+    local current_scene = scenes[scene_iterator]
+    if current_scene then
+      current_scene:on_keypressed(key, scancode)
+    end
   end
 end
 
@@ -86,23 +115,17 @@ end
 ---@param key string
 ---@param scancode integer
 function love.keyreleased(key, scancode)
-  local current_scene = scenes[scene_iterator]
-  if current_scene then
-    if key == "a" then
-      prev_scene()
-    elseif key == "d" then
-      next_scene()
+  imgui.love.KeyReleased(key)
+  if not imgui.love.GetWantCaptureKeyboard() then
+    local current_scene = scenes[scene_iterator]
+    if current_scene then
+      if key == "a" then
+        prev_scene()
+      elseif key == "d" then
+        next_scene()
+      end
+      current_scene:on_keyreleased(key, scancode)
     end
-    current_scene:on_keyreleased(key, scancode)
-  end
-end
-
----@param key string
----@param scancode integer
-function love.keypressed(key, scancode)
-  local current_scene = scenes[scene_iterator]
-  if current_scene then
-    current_scene:on_keypressed(key, scancode)
   end
 end
 
@@ -113,9 +136,12 @@ end
 ---@param dy number
 ---@param istouch boolean
 function love.mousemoved(x, y, dx, dy, istouch)
-  local current_scene = scenes[scene_iterator]
-  if current_scene then
-    current_scene:on_mousemoved(x, y, dx, dy, istouch)
+  imgui.love.MouseMoved(x, y)
+  if not imgui.love.GetWantCaptureMouse() then
+    local current_scene = scenes[scene_iterator]
+    if current_scene then
+      current_scene:on_mousemoved(x, y, dx, dy, istouch)
+    end
   end
 end
 
@@ -125,8 +151,59 @@ end
 ---@param button number
 ---@param istouch boolean
 function love.mousepressed(x, y, button, istouch)
-  local current_scene = scenes[scene_iterator]
-  if current_scene then
-    current_scene:on_mousepressed(x, y, button, istouch)
+  imgui.love.MousePressed(button)
+  if not imgui.love.GetWantCaptureMouse() then
+    local current_scene = scenes[scene_iterator]
+    if current_scene then
+      current_scene:on_mousepressed(x, y, button, istouch)
+    end
   end
+end
+
+function love.mousereleased(x, y, button, ...)
+  imgui.love.MouseReleased(button)
+  if not imgui.love.GetWantCaptureMouse() then
+    -- your code here
+  end
+end
+
+love.textinput = function(t)
+  imgui.love.TextInput(t)
+  if imgui.love.GetWantCaptureKeyboard() then
+    -- your code here
+  end
+end
+
+love.quit = function()
+  return imgui.love.Shutdown()
+end
+
+-- for gamepad support also add the following:
+
+love.joystickadded = function(joystick)
+  imgui.love.JoystickAdded(joystick)
+  -- your code here
+end
+
+love.joystickremoved = function(joystick)
+  imgui.love.JoystickRemoved()
+  -- your code here
+end
+
+love.gamepadpressed = function(joystick, button)
+  imgui.love.GamepadPressed(button)
+  -- your code here
+end
+
+love.gamepadreleased = function(joystick, button)
+  imgui.love.GamepadReleased(button)
+  -- your code here
+end
+
+-- choose threshold for considering analog controllers active, defaults to 0 if unspecified
+local threshold = 0.2
+
+love.gamepadaxis = function(joystick, axis, value)
+  imgui.love.GamepadAxis(axis, value, threshold)
+  -- your code here
 end
