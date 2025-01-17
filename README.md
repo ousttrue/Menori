@@ -19,6 +19,8 @@ You can generate documentation using `ldoc -c menori/docs/config.ld -o index .`
 
 ### luarock development
 
+`setup.ps1`
+
 ```
 Menori
   + luarocks
